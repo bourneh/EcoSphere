@@ -30,6 +30,24 @@
     <ClCompile Include="Vector2D.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Consumer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Producer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FoodWeb.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EcoSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -42,6 +60,30 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Vector2D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EcoSystemObject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EcoSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Producer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Consumer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FoodWeb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ecosystem_gdiplus.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

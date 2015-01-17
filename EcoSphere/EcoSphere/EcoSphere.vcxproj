@@ -78,14 +78,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Consumer.cpp" />
     <ClCompile Include="DisplayWindow.cpp" />
+    <ClCompile Include="EcoSystem.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Environment.cpp" />
+    <ClCompile Include="FoodWeb.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Producer.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Vector2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="Consumer.h" />
     <ClInclude Include="DisplayWindow.h" />
+    <ClInclude Include="EcoSystem.h" />
+    <ClInclude Include="EcoSystemObject.h" />
+    <ClInclude Include="ecosystem_gdiplus.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="Environment.h" />
+    <ClInclude Include="FoodWeb.h" />
+    <ClInclude Include="Producer.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Vector2D.h" />
   </ItemGroup>
