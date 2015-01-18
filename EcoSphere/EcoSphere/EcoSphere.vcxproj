@@ -79,6 +79,10 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Consumer.cpp" />
+    <ClCompile Include="DemoCow.cpp" />
+    <ClCompile Include="DemoEnvironment.cpp" />
+    <ClCompile Include="DemoGrass.cpp" />
+    <ClCompile Include="DemoTiger.cpp" />
     <ClCompile Include="DisplayWindow.cpp" />
     <ClCompile Include="EcoSystem.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -92,6 +96,10 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Consumer.h" />
+    <ClInclude Include="DemoCow.h" />
+    <ClInclude Include="DemoEnvironment.h" />
+    <ClInclude Include="DemoGrass.h" />
+    <ClInclude Include="DemoTiger.h" />
     <ClInclude Include="DisplayWindow.h" />
     <ClInclude Include="EcoSystem.h" />
     <ClInclude Include="EcoSystemObject.h" />

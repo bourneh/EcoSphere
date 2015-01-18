@@ -48,6 +48,18 @@
     <ClCompile Include="EcoSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DemoEnvironment.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoTiger.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoGrass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoCow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -84,6 +96,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ecosystem_gdiplus.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoEnvironment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoTiger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoGrass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoCow.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

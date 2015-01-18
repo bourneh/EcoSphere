@@ -25,8 +25,13 @@ class EcoSystem
 	friend class EcoSystemRenderer;
 	friend class EcoSystemTimerTask;
 public:
+	const static unsigned int DEFAULT_WIDTH = 1200;
+	const static unsigned int DEFAULT_HEIGHT = 700;
+	const static unsigned int CHUNK_SIZE = 32;
+
 	static Vector2D random_position();
 	static double random_double();
+	static double random_angle();
 	EcoSystem();
 	//virtual ~EcoSystem();
 
@@ -34,8 +39,11 @@ public:
 	void pause();
 	void reset();
 	virtual void on_tick();
-	const FoodWeb* get_food_web_instance();
-	const Environment* get_environment_instance();
+	FoodWeb* get_food_web_instance();
+	void set_food_web(FoodWeb *food_web);
+	Environment* get_environment_instance();
+	void set_environment(Environment *environment);
+
 	//void register_species(Entity *species);
 	void spawn_entity(Entity *entity);
 	void spawn_entity(Entity *entity, Vector2D position);
@@ -61,6 +69,7 @@ private:
 	std::mutex mtx;
 
 	Entity *find_entity_in_chunk(std::string type, int chunk_r, int chunk_c);
+	void spawn_basic_producer();
 };
 
 class EcoSystemRenderer : public RenderTask

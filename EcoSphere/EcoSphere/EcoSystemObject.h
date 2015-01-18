@@ -6,7 +6,7 @@ class EcoSystem;
 class EcoSystemObject
 {
 public:
-	const EcoSystem *get_eco_system_instance() const
+	EcoSystem *get_eco_system_instance() const
 	{
 		return eco_system;
 	}

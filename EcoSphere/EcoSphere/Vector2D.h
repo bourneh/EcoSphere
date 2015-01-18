@@ -16,9 +16,20 @@ public:
 	Vector2D& operator-=(const Vector2D &r);
 	bool operator==(const Vector2D &r) const;
 	bool operator!=(const Vector2D &r) const;
-	template<typename t> Vector2D operator*(const t &r) const;
+	//template<typename t> Vector2D operator*(const t &r) const;
 	template<typename t> Vector2D& operator*=(const t &r);
+	template<typename t>
+	Vector2D operator*(const t &r) const
+	{
+		return Vector2D(x * r, y * r);
+	}
 };
 
-template<typename t> Vector2D operator*(const t &l, const Vector2D &r);
+//template<typename t> Vector2D operator*(const t &l, const Vector2D &r);
+
+template<typename t>
+Vector2D operator*(const t &l, const Vector2D &r)
+{
+	return Vector2D(r.x * l, r.y * l);
+}
 #endif // DS_ECOSYSTEM_VECTOR2D

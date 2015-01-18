@@ -72,14 +72,14 @@ bool Vector2D::operator!=(const Vector2D &r) const
 	return !((*this) == r);
 }
 
-template<typename t>
+/*template<typename t>
 Vector2D Vector2D::operator*(const t &r) const
 {
 	return Vector2D(x * r, y * r);
-}
+}*/
 
-template<typename t>
+/*template<typename t>
 Vector2D operator*(const t &l, const Vector2D &r)
 {
 	return Vector2D(r.x * l, r.y * l);
-}
+}*/

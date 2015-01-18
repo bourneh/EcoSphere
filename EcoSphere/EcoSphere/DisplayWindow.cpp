@@ -1,9 +1,9 @@
 #include "DisplayWindow.h"
 #include <iostream>
 #include <thread>
-DisplayWindow::DisplayWindow(unsigned int width, unsigned int height, MouseHandler *mouse_handler, KeyboardHandler *keyboard_handler)
+DisplayWindow::DisplayWindow(unsigned int width, unsigned int height)
 {
-	init(width, height, mouse_handler, keyboard_handler);
+	init(width, height);
 }
 
 DisplayWindow::~DisplayWindow()
@@ -13,6 +13,7 @@ DisplayWindow::~DisplayWindow()
 
 void DisplayWindow::display()
 {
+	std::cout << "Window display\n";
 	if (!running)
 	{
 		std::thread t(DisplayWindow::ThreadFunction, this);
@@ -32,13 +33,14 @@ void DisplayWindow::on_quit()
 	CloseHandle(hwnd);
 }
 
-void DisplayWindow::init(unsigned int width, unsigned int height, MouseHandler *mouse_handler, KeyboardHandler *keyboard_handler)
+void DisplayWindow::init(unsigned int width, unsigned int height)
 {
 	this->width = width;
 	this->height = height;
 	title = L"Display Window";
 	window_class = L"DisplayWindow";
 	running = false;
+	hwnd = NULL;
 }
 
 LRESULT CALLBACK DisplayWindow::WndProc(HWND hWnd, UINT message, WPARAM wparam, LPARAM lparam)

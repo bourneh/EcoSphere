@@ -7,15 +7,14 @@
 #include "Animation.h"
 #include "Vector2D.h"
 #include "Consumer.h"
+#include "DemoGrass.h"
 #include <random>
 #include <set>
 #include <algorithm>
 
-const unsigned int DEFAULT_WIDTH  = 1200;
-const unsigned int DEFAULT_HEIGHT = 700;
-const unsigned int CHUNK_SIZE = 32;
+
 EcoSystemRenderer::EcoSystemRenderer(EcoSystem *eco_system) :
-RenderTask(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+RenderTask(EcoSystem::DEFAULT_WIDTH, EcoSystem::DEFAULT_HEIGHT)
 {
 	this->eco_system = eco_system;
 }
@@ -23,16 +22,14 @@ RenderTask(DEFAULT_WIDTH, DEFAULT_HEIGHT)
 Gdiplus::Image *EcoSystemRenderer::render()
 {
 	using namespace Gdiplus;
-
 	Graphics *g = get_graphics_instance();
 
 
-	eco_system->environment->render_environment_background(g);
-
 	eco_system->mtx.lock();
+	eco_system->environment->render_environment_background(g);
 	std::vector<Entity*>::iterator it;
-	for (int r = 0; r < (DEFAULT_HEIGHT + CHUNK_SIZE) / DEFAULT_HEIGHT; r++)
-		for (int c = 0; c < (DEFAULT_WIDTH + CHUNK_SIZE) / DEFAULT_WIDTH; c++)
+	for (int r = 0; r < (EcoSystem::DEFAULT_WIDTH + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; r++)
+		for (int c = 0; c < (EcoSystem::DEFAULT_HEIGHT + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; c++)
 		{
 			std::vector<Entity*> &ents = eco_system->entities[r][c];
 			std::sort(ents.begin(), ents.end(), EcoSystemRenderer::render_order);
@@ -42,16 +39,15 @@ Gdiplus::Image *EcoSystemRenderer::render()
 				g->DrawImage(ent.get_entity_image(), (int)ent.get_position().x, (int)ent.get_position().y);
 			}
 		}
-	eco_system->mtx.unlock();
 	eco_system->environment->render_environment_effects(g);
 
-
+	eco_system->mtx.unlock();
 	return RenderTask::render();
 }
 
 bool EcoSystemRenderer::render_order(const Entity *a, const Entity *b)
 {
-	return a->get_position().x < b->get_position().x;
+	return a->get_position().y < b->get_position().y;
 }
 
 EcoSystemTimerTask::EcoSystemTimerTask(EcoSystem *eco_system)
@@ -68,7 +64,8 @@ EcoSystem::EcoSystem()
 {
 	eco_system_renderer = new EcoSystemRenderer(this);
 	eco_system_timer_task = new EcoSystemTimerTask(this);
-	eco_system_display_window = new DisplayWindow(700, 700);
+	eco_system_display_window = new DisplayWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	eco_system_display_window->display();
 	Sleep(500);
 	eco_system_timer = new Timer(100, *eco_system_timer_task);
 	eco_system_animation = new Animation(eco_system_display_window->get_window_handle(), 13, *eco_system_renderer);
@@ -79,7 +76,8 @@ Vector2D EcoSystem::random_position()
 	static std::default_random_engine generator((unsigned int)time(NULL));
 	static std::uniform_real_distribution<double> posx(0.0, (double)DEFAULT_WIDTH);
 	static std::uniform_real_distribution<double> posy(0.0, (double)DEFAULT_HEIGHT);
-	return Vector2D(posx(generator), posy(generator));
+	double x = posx(generator), y = posy(generator);
+	return Vector2D(x, y);
 }
 
 double EcoSystem::random_double()
@@ -89,15 +87,27 @@ double EcoSystem::random_double()
 	return rand_double(generator);
 }
 
+double EcoSystem::random_angle()
+{
+	static std::default_random_engine generator((unsigned int)time(NULL));
+	static std::uniform_real_distribution<double> rand_double(0.0, 360.0);
+	return rand_double(generator);
+}
+
 void EcoSystem::on_tick()
 {
+	mtx.lock();
 	environment->on_tick();
 
-	mtx.lock();
+
+	if (random_double() > 0.8)
+		for (int i = 0; i < 20; i++)
+			spawn_basic_producer();
 	std::vector<Entity*>::iterator it;
 
-	for (int r = 0; r < (DEFAULT_HEIGHT + CHUNK_SIZE) / DEFAULT_HEIGHT; r++)
-		for (int c = 0; c < (DEFAULT_WIDTH + CHUNK_SIZE) / DEFAULT_WIDTH; c++)
+	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
+	{
+		for (int c = 0; c < (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE; c++)
 		{
 			std::vector<Entity*> &ents = entities[r][c];
 			for (it = ents.begin(); it != ents.end();)
@@ -115,8 +125,10 @@ void EcoSystem::on_tick()
 				}
 			}
 		}
-	for (int r = 0; r < (DEFAULT_HEIGHT + CHUNK_SIZE) / DEFAULT_HEIGHT; r++)
-		for (int c = 0; c < (DEFAULT_WIDTH + CHUNK_SIZE) / DEFAULT_WIDTH; c++)
+	}
+	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
+	{
+		for (int c = 0; c < (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE; c++)
 		{
 			std::vector<Entity*> &ents = entities[r][c];
 			for (it = ents.begin(); it != ents.end();)
@@ -128,8 +140,11 @@ void EcoSystem::on_tick()
 					it = ents.erase(it);
 					entities[chunk_r][chunk_c].push_back(&ent);
 				}
+				else
+					it++;
 			}
 		}
+	}
 	mtx.unlock();
 }
 
@@ -198,7 +213,7 @@ void EcoSystem::fight(Consumer *a, Consumer *b)
 
 Entity *EcoSystem::find_entity_in_chunk(std::string type, int chunk_r, int chunk_c)
 {
-	if (chunk_r < 0 || chunk_c < 0)
+	if (chunk_r < 0 || chunk_c < 0 || chunk_r >= (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE || chunk_c >= (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE)
 		return NULL;
 	std::vector<Entity*> &ents = entities[chunk_r][chunk_c];
 	std::vector<Entity*>::iterator it;
@@ -215,14 +230,35 @@ Entity *EcoSystem::find_entity(Entity *source, std::string type)
 	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
 	Entity *tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c))			!= NULL) return tmp;
+	
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c))		!= NULL) return tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c))		!= NULL) return tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c - 1))		!= NULL) return tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c + 1))		!= NULL) return tmp;
+	
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c - 1))	!= NULL) return tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c + 1))	!= NULL) return tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c - 1))	!= NULL) return tmp;
 	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c + 1))	!= NULL) return tmp;
+	
+	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c - 2))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c + 2))		!= NULL) return tmp;
+
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c - 1)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c + 1)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c - 1)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c + 1)) != NULL) return tmp;
+
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c + 2)) != NULL) return tmp;
 	return NULL;
 }
 
@@ -238,4 +274,30 @@ Entity *EcoSystem::find_prey(Entity *source)
 			return tmp;
 	}
 	return NULL;
+}
+
+FoodWeb *EcoSystem::get_food_web_instance()
+{
+	return food_web;
+}
+
+void EcoSystem::set_food_web(FoodWeb *food_web)
+{
+	this->food_web = food_web;
+}
+
+Environment *EcoSystem::get_environment_instance()
+{
+	return environment;
+}
+
+void EcoSystem::set_environment(Environment *environment)
+{
+	this->environment = environment;
+}
+
+void EcoSystem::spawn_basic_producer()
+{
+	Entity *basic_producer = new DemoGrass(this);
+	spawn_entity(basic_producer);
 }

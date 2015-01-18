@@ -1,5 +1,11 @@
 #include "Environment.h"
 
+Environment::Environment(EcoSystem *eco_system) :
+DynamicEcoSystemObject(eco_system) {}
+
+Environment::~Environment()
+{}
+
 void Environment::render_environment_background(Gdiplus::Graphics *g) const
 {
 }

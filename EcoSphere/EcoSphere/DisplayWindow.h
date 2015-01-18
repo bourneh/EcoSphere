@@ -4,13 +4,13 @@
 #ifndef DS_ECOSPHERE_DISPLAYWINDOW
 #define DS_ECOSPHERE_DISPLAYWINDOW
 
-class MouseHandler;
-class KeyboardHandler;
+//class MouseHandler;
+//class KeyboardHandler;
 
 class DisplayWindow
 {
 public:
-	DisplayWindow(unsigned int width, unsigned int height, MouseHandler *mouse_handler = NULL, KeyboardHandler *keyboard_handler = NULL);
+	DisplayWindow(unsigned int width, unsigned int height);
 	virtual ~DisplayWindow();
 
 	static void ThreadFunction(DisplayWindow* display_window);
@@ -21,7 +21,7 @@ public:
 
 private:
 	virtual void on_quit();
-	virtual void init(unsigned int width, unsigned int height, MouseHandler *mouse_handler, KeyboardHandler *keyboard_handler);
+	virtual void init(unsigned int width, unsigned int height);
 
 	bool running;
 	HWND hwnd;

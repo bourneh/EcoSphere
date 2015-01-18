@@ -1,17 +1,52 @@
 #include <iostream>
-#include <thread>
-#include <string>
-#include "DisplayWindow.h"
-#include "Timer.h"
-#include "Vector2D.h"
-#include "Animation.h"
-#include <iostream>
+#include "EcoSystem.h"
+#include "Demotiger.h"
+#include "DemoEnvironment.h"
+#include "DemoCow.h"
+#include "DemoGrass.h"
 using namespace std;
+
+Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+ULONG_PTR	 gdiplusToken;
+
+
 int main()
 {
-	DisplayWindow d(1200, 700);
-	d.display();
-	int a;
-	cin >> a;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+	EcoSystem ecosystem;
+	for (int i = 0; i < 5000; i++)
+	{
+		Entity *e1 = new DemoGrass(&ecosystem);
+		ecosystem.spawn_entity(e1);
+	}
+	for (int i = 0; i < 1000; i++)
+	{
+		Entity *e2 = new DemoCow(&ecosystem);
+		ecosystem.spawn_entity(e2);
+	}
+
+	for (int i = 0; i < 15; i++)
+	{
+		Entity *e2 = new DemoTiger(&ecosystem);
+		ecosystem.spawn_entity(e2);
+	}
+
+
+	DemoEnvironment be(&ecosystem);
+	ecosystem.set_environment(&be);
+
+	ecosystem.run();
+
+	int ss;
+	while (cin >> ss)
+	{
+		for (int i = 0; i < ss; i++)
+		{
+			Entity *e2 = new DemoCow(&ecosystem);
+			ecosystem.spawn_entity(e2);
+		}
+	}
+	Gdiplus::GdiplusShutdown(gdiplusToken);
 	return 0;
 }

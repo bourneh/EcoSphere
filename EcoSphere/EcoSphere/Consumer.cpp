@@ -30,7 +30,7 @@ Vector2D Consumer::get_velocity() const
 	return velocity;
 }
 
-void Consumer::set_velocity(double velocity)
+void Consumer::set_velocity(Vector2D velocity)
 {
 	this->velocity = velocity;
 }

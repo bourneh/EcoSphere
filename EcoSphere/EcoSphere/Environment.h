@@ -12,7 +12,6 @@ class VectorField;
 class Environment : public DynamicEcoSystemObject
 {
 public:
-	Environment(EcoSystem *eco_system);
 	virtual ~Environment();
 	virtual void    render_environment_background(Gdiplus::Graphics *g) const;
 	virtual void    render_environment_effects(Gdiplus::Graphics *g) const;
@@ -26,6 +25,8 @@ public:
 	double      get_precipitation() const;
 	void        set_precipitation(double precipitation);
 protected:
+	Environment(EcoSystem *eco_system);
+private:
 	double brightness, temperature, relative_humidity, precipitation;// brightness(0 - 100), tempreature(degree celsius), relative Humidity(0% ~ 100%), precipitation(millimeter)
 };
 

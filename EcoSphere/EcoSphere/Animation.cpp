@@ -11,7 +11,10 @@ void Animation::AnimationTimerTask::task()
 }
 
 Animation::Animation(HWND hWnd, double fps, RenderTask &render_task) :
-render_task(render_task), animate(hWnd, render_task), timer(1000 / fps, animate) {}
+render_task(render_task), animate(hWnd, render_task), timer(1000 / fps, animate) 
+{
+	std::cout << (int)hWnd << '\n';
+}
 
 Animation::~Animation() {}
 

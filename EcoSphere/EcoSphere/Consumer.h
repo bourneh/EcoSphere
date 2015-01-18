@@ -13,7 +13,7 @@ public:
 	int get_strength() const;
 	void set_strength(int strength);
 	Vector2D get_velocity() const;
-	void set_velocity(double velocity);
+	void set_velocity(Vector2D velocity);
 	
 	//virtual void avoid_predator();
 protected:
