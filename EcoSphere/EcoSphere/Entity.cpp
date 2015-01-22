@@ -3,7 +3,7 @@
 Entity::Entity(EcoSystem *eco_system) :
 DynamicEcoSystemObject(eco_system)
 {
-	valid = false;
+	valid = true;
 }
 Entity::~Entity() {}
 

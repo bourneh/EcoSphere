@@ -16,6 +16,7 @@ class Environment;
 class FoodWeb : public EcoSystemObject
 {
 public:
+	FoodWeb(EcoSystem *eco_system);
 	bool is_competitive(Entity *a, Entity *b);
 	bool is_prey(Entity *a, Entity *b);
 	bool is_valid();

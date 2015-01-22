@@ -5,6 +5,9 @@
 #include <fstream>
 using namespace std;
 
+FoodWeb::FoodWeb(EcoSystem *eco_system) : 
+EcoSystemObject(eco_system)
+{}
 bool FoodWeb::is_competitive(Entity *a, Entity *b)
 {
 	set<string> out;

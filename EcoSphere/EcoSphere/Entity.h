@@ -15,11 +15,11 @@ public:
 	Entity(EcoSystem *eco_system);
 	virtual ~Entity();
 
-	virtual std::string get_species_name() const = 0;
-	virtual Gdiplus::Image* get_entity_image() const = 0;
+	virtual			std::string get_species_name() const = 0;
+	virtual			Gdiplus::Image* get_entity_image() const = 0;
 	virtual Entity* new_entity() const = 0;
-	virtual bool is_producer() const = 0;
-	virtual bool is_consumer() const = 0;
+	virtual bool	is_producer() const = 0;
+	virtual bool	is_consumer() const = 0;
 
 	bool is_valid() const; 
 	void set_valid(bool valid);

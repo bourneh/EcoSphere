@@ -98,11 +98,6 @@ void EcoSystem::on_tick()
 {
 	mtx.lock();
 	environment->on_tick();
-
-
-	if (random_double() > 0.8)
-		for (int i = 0; i < 20; i++)
-			spawn_basic_producer();
 	std::vector<Entity*>::iterator it;
 
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
@@ -294,10 +289,4 @@ Environment *EcoSystem::get_environment_instance()
 void EcoSystem::set_environment(Environment *environment)
 {
 	this->environment = environment;
-}
-
-void EcoSystem::spawn_basic_producer()
-{
-	Entity *basic_producer = new DemoGrass(this);
-	spawn_entity(basic_producer);
 }

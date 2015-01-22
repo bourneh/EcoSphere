@@ -1,7 +1,7 @@
 #include <iostream>
 #include "EcoSystem.h"
 #include "Demotiger.h"
-#include "DemoEnvironment.h"
+#include "Environment.h"
 #include "DemoCow.h"
 #include "DemoGrass.h"
 using namespace std;
@@ -26,14 +26,15 @@ int main()
 		ecosystem.spawn_entity(e2);
 	}
 
-	for (int i = 0; i < 15; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		Entity *e2 = new DemoTiger(&ecosystem);
 		ecosystem.spawn_entity(e2);
 	}
 
 
-	DemoEnvironment be(&ecosystem);
+	Environment be(&ecosystem);
+	be.set_default_producer(new DemoGrass(&ecosystem));
 	ecosystem.set_environment(&be);
 
 	ecosystem.run();

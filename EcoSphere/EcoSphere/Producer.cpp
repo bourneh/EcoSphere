@@ -20,8 +20,7 @@ void Producer::on_tick()
 	if (growth_time == growth_cycle)
 	{
 		growth_time = 0;
-		Producer *new_producer = (Producer*)this->new_entity();
-		eco_system->spawn_entity(new_producer);
+		multiply();
 	}
 }
 unsigned int Producer::get_growth_cycle() const
@@ -31,4 +30,10 @@ unsigned int Producer::get_growth_cycle() const
 void Producer::set_growth_cycle(unsigned int growth_cycle)
 {
 	this->growth_cycle = growth_cycle;
+}
+
+void Producer::multiply()
+{
+	Producer *new_producer = (Producer*)this->new_entity();
+	eco_system->spawn_entity(new_producer);
 }

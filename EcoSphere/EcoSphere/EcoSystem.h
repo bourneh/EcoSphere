@@ -39,16 +39,16 @@ public:
 	void pause();
 	void reset();
 	virtual void on_tick();
-	FoodWeb* get_food_web_instance();
-	void set_food_web(FoodWeb *food_web);
-	Environment* get_environment_instance();
-	void set_environment(Environment *environment);
+	FoodWeb*		get_food_web_instance();
+	void			set_food_web(FoodWeb *food_web);
+	Environment*	get_environment_instance();
+	void			set_environment(Environment *environment);
 
 	//void register_species(Entity *species);
-	void spawn_entity(Entity *entity);
-	void spawn_entity(Entity *entity, Vector2D position);
-	bool try_eat(Entity *predator, Entity *prey);
-	void fight(Consumer *a, Consumer *b);
+	void	spawn_entity(Entity *entity);
+	void	spawn_entity(Entity *entity, Vector2D position);
+	bool	try_eat(Entity *predator, Entity *prey);
+	void	fight(Consumer *a, Consumer *b);
 	Entity *find_entity(Entity *source, std::string type);
 	Entity *find_prey(Entity *source);
 private:
@@ -69,7 +69,6 @@ private:
 	std::mutex mtx;
 
 	Entity *find_entity_in_chunk(std::string type, int chunk_r, int chunk_c);
-	void spawn_basic_producer();
 };
 
 class EcoSystemRenderer : public RenderTask

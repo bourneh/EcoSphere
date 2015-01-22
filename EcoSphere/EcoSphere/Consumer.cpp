@@ -25,12 +25,12 @@ void Consumer::set_strength(int strength)
 	this->strength = strength;
 }
 
-Vector2D Consumer::get_velocity() const
+double Consumer::get_speed() const
 {
-	return velocity;
+	return speed;
 }
 
-void Consumer::set_velocity(Vector2D velocity)
+void Consumer::set_speed(double speed)
 {
-	this->velocity = velocity;
+	this->speed = speed;
 }

@@ -10,17 +10,17 @@ public:
 	virtual bool is_producer() const;
 	virtual bool is_consumer() const;
 
-	int get_strength() const;
-	void set_strength(int strength);
-	Vector2D get_velocity() const;
-	void set_velocity(Vector2D velocity);
+	int		get_strength() const;
+	void	set_strength(int strength);
+	double	get_speed() const;
+	void	set_speed(double speed);
 	
 	//virtual void avoid_predator();
 protected:
 	Consumer(EcoSystem *eco_system);
 private:
 	int strength;
-	Vector2D velocity;
+	double speed;
 };
 
 #endif // DS_ECOSYSTEM_COMSUMER
