@@ -60,6 +60,9 @@
     <ClCompile Include="DemoCow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Grass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -108,6 +111,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="DemoCow.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

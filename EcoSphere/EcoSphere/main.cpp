@@ -3,7 +3,7 @@
 #include "Demotiger.h"
 #include "Environment.h"
 #include "DemoCow.h"
-#include "DemoGrass.h"
+#include "Grass.h"
 using namespace std;
 
 Gdiplus::GdiplusStartupInput gdiplusStartupInput;
@@ -15,11 +15,11 @@ int main()
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 	EcoSystem ecosystem;
-	for (int i = 0; i < 5000; i++)
+	/*for (int i = 0; i < 10000; i++)
 	{
-		Entity *e1 = new DemoGrass(&ecosystem);
+		Entity *e1 = new Grass(&ecosystem);
 		ecosystem.spawn_entity(e1);
-	}
+	}*/
 	for (int i = 0; i < 1000; i++)
 	{
 		Entity *e2 = new DemoCow(&ecosystem);
@@ -34,7 +34,7 @@ int main()
 
 
 	Environment be(&ecosystem);
-	be.set_default_producer(new DemoGrass(&ecosystem));
+	be.set_default_producer(new Grass(&ecosystem));
 	ecosystem.set_environment(&be);
 
 	ecosystem.run();
@@ -42,11 +42,7 @@ int main()
 	int ss;
 	while (cin >> ss)
 	{
-		for (int i = 0; i < ss; i++)
-		{
-			Entity *e2 = new DemoCow(&ecosystem);
-			ecosystem.spawn_entity(e2);
-		}
+		be.set_temperature(ss);
 	}
 	Gdiplus::GdiplusShutdown(gdiplusToken);
 	return 0;

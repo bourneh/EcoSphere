@@ -33,7 +33,8 @@ void Environment::spawn_producer()
 	if (default_producer != NULL)
 		if (EcoSystem::random_double() > 0.8)
 			for (int i = 0; i < 20; i++)
-				eco_system->spawn_entity(default_producer->new_entity());
+				if (temperature > 0.0)
+					eco_system->spawn_entity(default_producer->new_entity());
 }
 
 double Environment::get_brightness() const
@@ -82,4 +83,9 @@ void Environment::set_precipitation(double precipitation)
 void Environment::set_default_producer(Producer *producer)
 {
 	this->default_producer = producer;
+}
+
+Producer *Environment::get_default_producer() const
+{
+	return default_producer;
 }

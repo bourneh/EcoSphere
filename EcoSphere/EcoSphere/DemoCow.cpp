@@ -30,7 +30,7 @@ void DemoCow::on_tick()
 {
 	const static double SPEED = 5.0;
 	set_energy(get_energy() - 1);
-	Entity *food = eco_system->find_entity(this, "hehegrass");
+	Entity *food = eco_system->find_entity(this, "Grass");
 	if (food != NULL)
 	{
 		Vector2D target_position = food->get_position();

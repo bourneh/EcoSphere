@@ -35,5 +35,6 @@ void Producer::set_growth_cycle(unsigned int growth_cycle)
 void Producer::multiply()
 {
 	Producer *new_producer = (Producer*)this->new_entity();
-	eco_system->spawn_entity(new_producer);
+	Vector2D spawn_position = EcoSystem::random_double() * Vector2D(5, 0).rotate(EcoSystem::random_angle()) + get_position();
+	eco_system->spawn_entity(new_producer, spawn_position);
 }

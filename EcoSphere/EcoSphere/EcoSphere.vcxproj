@@ -88,6 +88,7 @@
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="FoodWeb.cpp" />
+    <ClCompile Include="Grass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Producer.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -107,6 +108,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="FoodWeb.h" />
+    <ClInclude Include="Grass.h" />
     <ClInclude Include="Producer.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Vector2D.h" />

@@ -27,11 +27,12 @@ public:
 	void        set_relative_humidity(double relative_humidity);
 	double      get_precipitation() const;
 	void        set_precipitation(double precipitation);
+	Producer *get_default_producer() const;
 	void		set_default_producer(Producer *producer);
 
 protected:
 private:
-	double brightness, temperature, relative_humidity, precipitation;// brightness(0 - 100), tempreature(degree celsius), relative Humidity(0% ~ 100%), precipitation(millimeter)
+	double brightness, temperature, relative_humidity, precipitation;// brightness(0 - 100), tempreature(degree celsius), relative Humidity(0.0 ~ 1.0), precipitation(millimeter)
 	Producer *default_producer;
 };
 

@@ -11,7 +11,9 @@
 #include <random>
 #include <set>
 #include <algorithm>
+#include <queue>
 
+const static double	ENERGY_SOIL_FERTILITY_CONVERSION_RATE = 0.20;
 
 EcoSystemRenderer::EcoSystemRenderer(EcoSystem *eco_system) :
 RenderTask(EcoSystem::DEFAULT_WIDTH, EcoSystem::DEFAULT_HEIGHT)
@@ -99,7 +101,7 @@ void EcoSystem::on_tick()
 	mtx.lock();
 	environment->on_tick();
 	std::vector<Entity*>::iterator it;
-
+	std::queue<Entity*> q;
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
 		for (int c = 0; c < (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE; c++)
@@ -115,11 +117,18 @@ void EcoSystem::on_tick()
 				}
 				else
 				{
-					(*it)->on_tick();
+					//(*it)->on_tick();
+					q.push(*it);
 					it++;
 				}
 			}
 		}
+	}
+
+	while (!q.empty())
+	{
+		q.front()->on_tick();
+		q.pop();
 	}
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
@@ -145,6 +154,14 @@ void EcoSystem::on_tick()
 
 void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
 {
+	if (position.x < 0.0)
+		position.x = 0.0;
+	if (position.x > (double)DEFAULT_WIDTH - 0.1)
+		position.x = (double)DEFAULT_WIDTH - 0.1;
+	if (position.y < 0.0)
+		position.y = 0.0;
+	if (position.y > (double)DEFAULT_HEIGHT - 0.1)
+		position.y = (double)DEFAULT_HEIGHT - 0.1;
 	entity->set_position(position);
 	int chunk_r = (int)entity->get_position().x / CHUNK_SIZE, chunk_c = (int)entity->get_position().y / CHUNK_SIZE;
 	entities[chunk_r][chunk_c].push_back(entity);

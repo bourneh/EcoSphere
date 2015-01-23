@@ -3,6 +3,7 @@
 #include <mutex>
 #include <string>
 #include <random>
+#include <queue>
 #include <functional>
 #ifndef DS_ECOSYSTEM
 #define DS_ECOSYSTEM
@@ -25,10 +26,9 @@ class EcoSystem
 	friend class EcoSystemRenderer;
 	friend class EcoSystemTimerTask;
 public:
-	const static unsigned int DEFAULT_WIDTH = 1200;
-	const static unsigned int DEFAULT_HEIGHT = 700;
-	const static unsigned int CHUNK_SIZE = 32;
-
+	const static unsigned int	DEFAULT_WIDTH							= 1200;
+	const static unsigned int	DEFAULT_HEIGHT							= 700;
+	const static unsigned int	CHUNK_SIZE								= 32;
 	static Vector2D random_position();
 	static double random_double();
 	static double random_angle();
@@ -54,7 +54,7 @@ public:
 private:
 	std::map<std::string, Entity*>         species_list;
 	std::vector<Entity*>                    entities[50][50];
-
+	std::queue<Entity*>						entities_about_to_spawn;
 	FoodWeb     *food_web;
 	Environment *environment;
 
