@@ -37,5 +37,9 @@ void FoodWeb::add(string predator, string prey)
 	prey_predator_web[prey].insert(predator);
 }
 
+set<string> &FoodWeb::get_prey_set(Entity *source)
+{
+	return predator_prey_web[source->get_species_name()];
+}
 
 

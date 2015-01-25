@@ -70,7 +70,7 @@ EcoSystem::EcoSystem()
 	eco_system_display_window->display();
 	Sleep(500);
 	eco_system_timer = new Timer(100, *eco_system_timer_task);
-	eco_system_animation = new Animation(eco_system_display_window->get_window_handle(), 13, *eco_system_renderer);
+	eco_system_animation = new Animation(eco_system_display_window->get_window_handle(), 11, *eco_system_renderer);
 }
 
 Vector2D EcoSystem::random_position()

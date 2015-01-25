@@ -15,6 +15,8 @@ public:
 	double	get_speed() const;
 	void	set_speed(double speed);
 	
+	virtual void predate();
+	virtual void brownian_motion();
 	//virtual void avoid_predator();
 protected:
 	Consumer(EcoSystem *eco_system);

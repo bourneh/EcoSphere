@@ -4,6 +4,7 @@
 #include "Environment.h"
 #include "DemoCow.h"
 #include "Grass.h"
+#include "FoodWeb.h"
 using namespace std;
 
 Gdiplus::GdiplusStartupInput gdiplusStartupInput;
@@ -15,6 +16,10 @@ int main()
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 	EcoSystem ecosystem;
+	FoodWeb fw(&ecosystem);
+	ecosystem.set_food_web(&fw);
+	fw.add("hehetiger", "hehecow");
+	fw.add("hehecow", "Grass");
 	/*for (int i = 0; i < 10000; i++)
 	{
 		Entity *e1 = new Grass(&ecosystem);
