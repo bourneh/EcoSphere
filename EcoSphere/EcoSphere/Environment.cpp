@@ -34,7 +34,11 @@ void Environment::spawn_producer()
 		if (EcoSystem::random_double() > 0.8)
 			for (int i = 0; i < 20; i++)
 				if (temperature > 0.0)
-					eco_system->spawn_entity(default_producer->new_entity());
+				{
+					Vector2D pos = EcoSystem::random_position();
+					Vector2D spawn_pos((int)pos.x / 20 * 20, (int)pos.y / 35 * 35);
+					eco_system->spawn_entity(default_producer->new_entity(), spawn_pos);
+				}
 }
 
 double Environment::get_brightness() const

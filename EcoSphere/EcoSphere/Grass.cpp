@@ -9,7 +9,7 @@ Producer(eco_system)
 }
 Gdiplus::Image *Grass::get_entity_image() const
 {
-	static Gdiplus::Image *img = Gdiplus::Image::FromFile(L".\\images\\demograss.png");
+	static Gdiplus::Image *img = Gdiplus::Image::FromFile(L".\\images\\grass.png");
 	return img;
 }
 
