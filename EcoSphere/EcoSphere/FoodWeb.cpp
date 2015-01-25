@@ -31,55 +31,11 @@ bool FoodWeb::is_valid()
 	return false;
 }
 
-set<string> &FoodWeb::get_prey_set(Entity *source)
+void FoodWeb::add(string predator, string prey)
 {
-	return predator_prey_web[source->get_species_name()];
+	predator_prey_web[predator].insert(prey);
+	prey_predator_web[prey].insert(predator);
 }
-void FoodWeb::load_food_web_from_istream(std::istream &is)
-{
-	string predator, prey;
-	while (is >> predator && predator != "end")
-	{
-		is >> prey;
-		map<string, set<string> >::iterator it = predator_prey_web.find(predator);
-		if (it == predator_prey_web.end())
-		{
-			set<string> s;
-			s.insert(prey);
-			predator_prey_web.insert(pair<string, set<string> >(predator, s));
-		}
-		else
-			it->second.insert(prey);
-
-		map<string, set<string> >::iterator it2 = prey_predator_web.find(predator);
-		if (it == prey_predator_web.end())
-		{
-			set<string> s;
-			s.insert(predator);
-			predator_prey_web.insert(pair<string, set<string> >(prey, s));
-		}
-		else
-			it->second.insert(predator);
-	}
-}
-
-void FoodWeb::food_web_from_file(string file_name)
-{
-	ifstream ifs(file_name.c_str());
-	if (!ifs.good())
-	{
-		cerr << "Can not open file " << file_name << ".\n";
-		return;
-	}
-
-	load_food_web_from_istream(ifs);
-}
-
-void FoodWeb::food_web_from_input()
-{
-	load_food_web_from_istream(cin);
-}
-
 
 
 
