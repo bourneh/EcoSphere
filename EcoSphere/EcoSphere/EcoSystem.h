@@ -32,6 +32,7 @@ public:
 	static Vector2D random_position();
 	static double random_double();
 	static double random_angle();
+	static void prevent_overstep(Vector2D &position);
 	EcoSystem();
 	//virtual ~EcoSystem();
 

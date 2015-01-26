@@ -82,6 +82,18 @@ Vector2D EcoSystem::random_position()
 	return Vector2D(x, y);
 }
 
+void EcoSystem::prevent_overstep(Vector2D &position)
+{
+	if (position.x < 0.01)
+		position.x = 0.1;
+	if (position.x > DEFAULT_WIDTH - 0.01)
+		position.x = DEFAULT_WIDTH - 0.1;
+	if (position.y < 0.01)
+		position.y = 0.1;
+	if (position.y > DEFAULT_HEIGHT - 0.01)
+		position.y = DEFAULT_HEIGHT - 0.1;
+}
+
 double EcoSystem::random_double()
 {
 	static std::default_random_engine generator((unsigned int)time(NULL));
@@ -154,14 +166,7 @@ void EcoSystem::on_tick()
 
 void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
 {
-	if (position.x < 0.0)
-		position.x = 0.0;
-	if (position.x > (double)DEFAULT_WIDTH - 0.1)
-		position.x = (double)DEFAULT_WIDTH - 0.1;
-	if (position.y < 0.0)
-		position.y = 0.0;
-	if (position.y > (double)DEFAULT_HEIGHT - 0.1)
-		position.y = (double)DEFAULT_HEIGHT - 0.1;
+	prevent_overstep(position);
 	entity->set_position(position);
 	int chunk_r = (int)entity->get_position().x / CHUNK_SIZE, chunk_c = (int)entity->get_position().y / CHUNK_SIZE;
 	entities[chunk_r][chunk_c].push_back(entity);
@@ -202,6 +207,12 @@ bool EcoSystem::try_eat(Entity *predator, Entity *prey)
 		&& (prey->is_valid()))
 	{
 		predator->set_energy(predator->get_energy() + prey->get_energy() * ENERGY_TRANSFER_RATE);
+		if (prey->is_consumer())
+		{
+			Consumer *tmp = dynamic_cast<Consumer*>(prey);
+			if (tmp != NULL)
+				tmp->on_eaten();
+		}
 		prey->set_valid(false);
 		return true;
 	}
@@ -213,11 +224,13 @@ void EcoSystem::fight(Consumer *a, Consumer *b)
 	double bound = a->get_strength() / (a->get_strength() + b->get_strength());
 	if (random_double() < bound)
 	{
+		b->on_killed();
 		b->set_valid(false);
 		a->set_energy(a->get_energy() - random_double() * 0.3 * b->get_energy());
 	}
 	else
 	{
+		a->on_killed();
 		a->set_valid(false);
 		b->set_energy(b->get_energy() - random_double() * 0.3 * a->get_energy());
 	}

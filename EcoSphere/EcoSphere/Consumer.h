@@ -15,6 +15,11 @@ public:
 	double	get_speed() const;
 	void	set_speed(double speed);
 	
+	//reactions
+	virtual void on_eaten();
+	virtual void on_killed();
+
+	//behaviors
 	virtual void predate();
 	virtual void brownian_motion();
 	//virtual void avoid_predator();
