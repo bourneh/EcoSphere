@@ -113,34 +113,16 @@ void EcoSystem::on_tick()
 	mtx.lock();
 	environment->on_tick();
 	std::vector<Entity*>::iterator it;
-	std::queue<Entity*> q;
-	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
+	std::map<Entity*, int>::iterator map_it;
+	for (map_it = update_queue.begin(); map_it != update_queue.end();)
 	{
-		for (int c = 0; c < (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE; c++)
+		if (!(map_it->first->is_valid()))
+			map_it = update_queue.erase(map_it);
+		else
 		{
-			std::vector<Entity*> &ents = entities[r][c];
-			for (it = ents.begin(); it != ents.end();)
-			{
-				if (!((*it)->is_valid()))
-				{
-					Entity *tmp = (*it);
-					it = ents.erase(it);
-					delete tmp;
-				}
-				else
-				{
-					//(*it)->on_tick();
-					q.push(*it);
-					it++;
-				}
-			}
+			map_it->first->on_tick();
+			++map_it;
 		}
-	}
-
-	while (!q.empty())
-	{
-		q.front()->on_tick();
-		q.pop();
 	}
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
@@ -150,6 +132,11 @@ void EcoSystem::on_tick()
 			for (it = ents.begin(); it != ents.end();)
 			{
 				Entity &ent = *(*it);
+				if (!ent.is_valid())
+				{
+					it = ents.erase(it);
+					continue;
+				}
 				int chunk_r = (int)ent.get_position().x / CHUNK_SIZE, chunk_c = (int)ent.get_position().y / CHUNK_SIZE;
 				if (chunk_r != r || chunk_c != c)
 				{
@@ -170,6 +157,7 @@ void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
 	entity->set_position(position);
 	int chunk_r = (int)entity->get_position().x / CHUNK_SIZE, chunk_c = (int)entity->get_position().y / CHUNK_SIZE;
 	entities[chunk_r][chunk_c].push_back(entity);
+	update_queue.insert(std::pair<Entity*, int>(entity, 0));
 }
 
 void EcoSystem::spawn_entity(Entity *entity)

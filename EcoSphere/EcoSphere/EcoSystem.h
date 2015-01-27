@@ -55,7 +55,7 @@ public:
 private:
 	std::map<std::string, Entity*>         species_list;
 	std::vector<Entity*>                    entities[50][50];
-	std::queue<Entity*>						entities_about_to_spawn;
+	std::map<Entity*, int>						update_queue;
 	FoodWeb     *food_web;
 	Environment *environment;
 
