@@ -94,6 +94,12 @@ void EcoSystem::prevent_overstep(Vector2D &position)
 		position.y = DEFAULT_HEIGHT - 0.1;
 }
 
+void EcoSystem::prevent_overstep(Entity *entity)
+{
+	Vector2D position = entity->get_position();
+	prevent_overstep(position);
+	entity->set_position(position);
+}
 double EcoSystem::random_double()
 {
 	static std::default_random_engine generator((unsigned int)time(NULL));
@@ -113,15 +119,16 @@ void EcoSystem::on_tick()
 	mtx.lock();
 	environment->on_tick();
 	std::vector<Entity*>::iterator it;
-	std::map<Entity*, int>::iterator map_it;
-	for (map_it = update_queue.begin(); map_it != update_queue.end();)
+	std::set<Entity*>::iterator set_it;
+	for (set_it = update_queue.begin(); set_it != update_queue.end();)
 	{
-		if (!(map_it->first->is_valid()))
-			map_it = update_queue.erase(map_it);
+		if (!((*set_it)->is_valid()))
+			set_it = update_queue.erase(set_it);
 		else
 		{
-			map_it->first->on_tick();
-			++map_it;
+			(*set_it)->on_tick();
+			prevent_overstep(*set_it);
+			++set_it;
 		}
 	}
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
@@ -157,7 +164,7 @@ void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
 	entity->set_position(position);
 	int chunk_r = (int)entity->get_position().x / CHUNK_SIZE, chunk_c = (int)entity->get_position().y / CHUNK_SIZE;
 	entities[chunk_r][chunk_c].push_back(entity);
-	update_queue.insert(std::pair<Entity*, int>(entity, 0));
+	update_queue.insert(entity);
 }
 
 void EcoSystem::spawn_entity(Entity *entity)

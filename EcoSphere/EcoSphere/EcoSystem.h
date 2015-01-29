@@ -1,4 +1,5 @@
 #include <map>
+#include <set>
 #include <vector>
 #include <mutex>
 #include <string>
@@ -33,6 +34,7 @@ public:
 	static double random_double();
 	static double random_angle();
 	static void prevent_overstep(Vector2D &position);
+	static void prevent_overstep(Entity *entity);
 	EcoSystem();
 	//virtual ~EcoSystem();
 
@@ -55,7 +57,7 @@ public:
 private:
 	std::map<std::string, Entity*>         species_list;
 	std::vector<Entity*>                    entities[50][50];
-	std::map<Entity*, int>						update_queue;
+	std::set<Entity*>						update_queue;
 	FoodWeb     *food_web;
 	Environment *environment;
 
