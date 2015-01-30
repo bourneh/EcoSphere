@@ -12,6 +12,8 @@ public:
 
 	int		get_strength() const;
 	void	set_strength(int strength);
+	int		get_age() const;
+	void	set_age(int age);
 	double	get_speed() const;
 	void	set_speed(double speed);
 	
@@ -26,7 +28,7 @@ public:
 protected:
 	Consumer(EcoSystem *eco_system);
 private:
-	int strength;
+	int strength, age;
 	double speed;
 };
 

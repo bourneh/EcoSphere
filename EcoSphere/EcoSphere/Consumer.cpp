@@ -25,6 +25,16 @@ void Consumer::set_strength(int strength)
 	this->strength = strength;
 }
 
+int Consumer::get_age() const
+{
+	return age;
+}
+
+void Consumer::set_age(int age)
+{
+	this->age = age;
+}
+
 double Consumer::get_speed() const
 {
 	return speed;
