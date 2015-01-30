@@ -31,7 +31,7 @@ int main()
 		ecosystem.spawn_entity(e2);
 	}
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		Entity *e2 = new DemoTiger(&ecosystem);
 		ecosystem.spawn_entity(e2);
