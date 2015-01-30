@@ -122,7 +122,7 @@ void EcoSystem::on_tick()
 	std::set<Entity*>::iterator set_it;
 	for (set_it = update_queue.begin(); set_it != update_queue.end();)
 	{
-		if (!((*set_it)->is_valid()))
+		if (!((*set_it)->is_alive()))
 			set_it = update_queue.erase(set_it);
 		else
 		{
@@ -139,7 +139,7 @@ void EcoSystem::on_tick()
 			for (it = ents.begin(); it != ents.end();)
 			{
 				Entity &ent = *(*it);
-				if (!ent.is_valid())
+				if (!ent.is_alive())
 				{
 					it = ents.erase(it);
 					continue;
@@ -198,17 +198,28 @@ bool EcoSystem::try_eat(Entity *predator, Entity *prey)
 	const static double ENERGY_TRANSFER_RATE = 0.20;
 	if ((food_web->is_prey(prey, predator))
 		&& ((predator->get_position() - prey->get_position()).modulus() < MIN_EATABLE_DISTANCE)
-		&& (predator->is_valid())
-		&& (prey->is_valid()))
+		&& (predator->is_alive())
+		&& (prey->is_alive()))
 	{
-		predator->set_energy(predator->get_energy() + prey->get_energy() * ENERGY_TRANSFER_RATE);
 		if (prey->is_consumer())
 		{
-			Consumer *tmp = dynamic_cast<Consumer*>(prey);
-			if (tmp != NULL)
-				tmp->on_eaten();
+			Consumer *tmp_prey = dynamic_cast<Consumer*>(prey);
+			Consumer *tmp_predator = dynamic_cast<Consumer*>(predator);
+			if (tmp_prey != NULL && tmp_predator != NULL)
+			{
+				fight(tmp_prey, tmp_predator);
+				if (predator->is_alive())
+				{
+					tmp_prey->on_eaten();
+					predator->set_energy(predator->get_energy() + prey->get_energy() * ENERGY_TRANSFER_RATE);
+				}
+			}
 		}
-		prey->set_valid(false);
+		else
+		{
+			predator->set_energy(predator->get_energy() + prey->get_energy() * ENERGY_TRANSFER_RATE);
+			prey->set_died();
+		}
 		return true;
 	}
 	return false;
@@ -216,18 +227,23 @@ bool EcoSystem::try_eat(Entity *predator, Entity *prey)
 
 void EcoSystem::fight(Consumer *a, Consumer *b)
 {
-	double bound = a->get_strength() / (a->get_strength() + b->get_strength());
+	double bound = a->get_strength() / (double)(a->get_strength() + b->get_strength());
+	const static double KILL_COST_PER_UNIT_STRENGTH = 1000.0;
 	if (random_double() < bound)
 	{
 		b->on_killed();
-		b->set_valid(false);
-		a->set_energy(a->get_energy() - random_double() * 0.3 * b->get_energy());
+		b->set_died();
+		a->set_energy(a->get_energy() - KILL_COST_PER_UNIT_STRENGTH * b->get_strength());
+		if (a->get_energy() < 0)
+			a->set_died();
 	}
 	else
 	{
 		a->on_killed();
-		a->set_valid(false);
-		b->set_energy(b->get_energy() - random_double() * 0.3 * a->get_energy());
+		a->set_died();
+		b->set_energy(b->get_energy() - KILL_COST_PER_UNIT_STRENGTH * a->get_strength());
+		if (b->get_energy() < 0)
+			b->set_died();
 	}
 }
 

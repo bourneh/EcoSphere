@@ -21,15 +21,19 @@ public:
 	virtual bool	is_producer() const = 0;
 	virtual bool	is_consumer() const = 0;
 
-	bool is_valid() const; 
-	void set_valid(bool valid);
 	Vector2D get_position() const;
 	void set_position(Vector2D position);
 	double get_energy() const;
 	void set_energy(double energy);
+	int		get_age() const;
+	void	set_age(int age);
+	bool is_alive() const;
+	void set_alive();
+	void set_died();
 protected:
 	bool valid;
 private:
+	int age;
 	double energy;
 	Vector2D position;
 

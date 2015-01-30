@@ -3,9 +3,10 @@
 DemoTiger::DemoTiger(EcoSystem *eco_system) :
 Consumer(eco_system)
 {
-	set_valid(true);
-	set_energy(10000);
+	set_alive();
+	set_energy(100000);
 	set_speed(15.0);
+	set_strength(15);
 }
 
 DemoTiger::~DemoTiger() {}
@@ -31,5 +32,5 @@ void DemoTiger::on_tick()
 	predate();
 
 	if (get_energy() < 300)
-		set_valid(false);
+		set_died();
 }

@@ -5,7 +5,7 @@ Producer(eco_system)
 {
 	set_energy(500);
 	set_growth_cycle(5000);
-	this->set_valid(true);
+	set_alive();
 }
 Gdiplus::Image *DemoGrass::get_entity_image() const
 {

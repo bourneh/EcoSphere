@@ -4,9 +4,10 @@
 DemoCow::DemoCow(EcoSystem *eco_system) :
 Consumer(eco_system)
 {
-	set_valid(true);
-	set_energy(5000);
+	set_alive();
+	set_energy(7000);
 	set_speed(5.0);
+	set_strength(3);
 }
 
 DemoCow::~DemoCow() {}
@@ -32,5 +33,5 @@ void DemoCow::on_tick()
 	predate();
 
 	if (get_energy() < 300)
-		set_valid(false);
+		set_died();
 }

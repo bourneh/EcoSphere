@@ -25,7 +25,7 @@ int main()
 		Entity *e1 = new Grass(&ecosystem);
 		ecosystem.spawn_entity(e1);
 	}*/
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		Entity *e2 = new DemoCow(&ecosystem);
 		ecosystem.spawn_entity(e2);
