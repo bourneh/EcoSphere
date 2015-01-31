@@ -228,7 +228,7 @@ bool EcoSystem::try_eat(Entity *predator, Entity *prey)
 void EcoSystem::fight(Consumer *a, Consumer *b)
 {
 	double bound = a->get_strength() / (double)(a->get_strength() + b->get_strength());
-	const static double KILL_COST_PER_UNIT_STRENGTH = 1000.0;
+	const static double KILL_COST_PER_UNIT_STRENGTH = 100.0;
 	if (random_double() < bound)
 	{
 		b->on_killed();
