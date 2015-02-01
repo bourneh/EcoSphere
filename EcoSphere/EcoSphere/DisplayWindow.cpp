@@ -47,6 +47,8 @@ LRESULT CALLBACK DisplayWindow::WndProc(HWND hWnd, UINT message, WPARAM wparam, 
 {
 	switch (message)
 	{
+	case WM_ERASEBKGND:
+		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
