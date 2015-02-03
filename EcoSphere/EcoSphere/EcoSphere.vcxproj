@@ -78,6 +78,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationDisplayWindow.cpp" />
     <ClCompile Include="Consumer.cpp" />
     <ClCompile Include="DemoCow.cpp" />
     <ClCompile Include="DemoEnvironment.cpp" />
@@ -96,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="AnimationDisplayWindow.h" />
     <ClInclude Include="Consumer.h" />
     <ClInclude Include="DemoCow.h" />
     <ClInclude Include="DemoEnvironment.h" />

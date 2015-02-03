@@ -33,6 +33,8 @@ void Timer::threadfunction(Timer *timer)
 
 void Timer::start()
 {
+	if (running)
+		return;
 	running = true;
 	std::thread t(threadfunction, this);
 	t.detach();

@@ -1,55 +1,58 @@
 #include "Animation.h"
 #include <iostream>
-Animation::AnimationTimerTask::AnimationTimerTask(HWND hWnd, RenderTask &render_task) :
-hWnd(hWnd), render_task(render_task), g(hWnd) {}
+
+
+Animation::AnimationTimerTask::AnimationTimerTask(Animation *animation)
+{
+	this->animation = animation;
+}
 
 void Animation::AnimationTimerTask::task()
 {
-	Gdiplus::Color c(255, 255, 255);
-	render_task.get_graphics_instance()->Clear(c);
-	g.DrawImage(render_task.render(), 0, 0);
+	animation->render(animation->g);
 }
 
-Animation::Animation(HWND hWnd, double fps, RenderTask &render_task) :
-render_task(render_task), animate(hWnd, render_task), timer(1000 / fps, animate) 
+Animation::Animation(unsigned int width, unsigned int height) :
+width(width), height(height)
 {
-	std::cout << (int)hWnd << '\n';
+	buffer = new Gdiplus::Bitmap(width, height);
+	g = new Gdiplus::Graphics(buffer);
+	att = new AnimationTimerTask(this);
+	timer = new Timer(80, *att);
 }
 
-Animation::~Animation() {}
+Animation::~Animation()
+{
+	delete timer;
+	delete att;
+	delete g;
+	delete buffer;
+}
+
+void Animation::render(Gdiplus::Graphics *g)
+{}
 
 void Animation::start()
 {
-	timer.start();
+	timer->start();
 }
 
 void Animation::stop()
 {
-	timer.stop();
+	timer->stop();
 }
 
-bool Animation::is_running() const
+bool Animation::try_lock()
 {
-	return timer.is_running();
-}
-RenderTask::RenderTask(unsigned int width, unsigned int height)
-{
-	buffer = new Gdiplus::Bitmap(width, height);
-	g = new Gdiplus::Graphics(buffer);
+	return rendering_mutex.try_lock();
 }
 
-RenderTask::~RenderTask()
+void Animation::unlock()
 {
-	delete buffer;
-	delete g;
+	rendering_mutex.unlock();
 }
 
-Gdiplus::Image* RenderTask::render()
+Gdiplus::Image *Animation::get_buffer_pointer()
 {
 	return buffer;
-}
-
-Gdiplus::Graphics* RenderTask::get_graphics_instance()
-{
-	return g;
 }

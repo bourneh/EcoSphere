@@ -10,11 +10,11 @@
 #define DS_ECOSYSTEM
 
 #include "Animation.h"
-#include "DisplayWindow.h"
+#include "AnimationDisplayWindow.h"
 #include "Timer.h"
 #include "Vector2D.h"
 
-class EcoSystemRenderer;
+class EcoSystemAnimation;
 class EcoSystemTimerTask;
 
 class Environment;
@@ -24,7 +24,7 @@ class Consumer;
 
 class EcoSystem
 {
-	friend class EcoSystemRenderer;
+	friend class EcoSystemAnimation;
 	friend class EcoSystemTimerTask;
 public:
 	const static unsigned int	DEFAULT_WIDTH							= 1200;
@@ -40,6 +40,7 @@ public:
 
 	void run();
 	void pause();
+	void resume();
 	void reset();
 	virtual void on_tick();
 	FoodWeb*		get_food_web_instance();
@@ -55,35 +56,33 @@ public:
 	Entity *find_entity(Entity *source, std::string type);
 	Entity *find_prey(Entity *source);
 private:
+	Entity *find_entity_in_chunk(std::string type, int chunk_r, int chunk_c);
+	
 	std::map<std::string, Entity*>         species_list;
 	std::vector<Entity*>                    entities[50][50];
 	std::set<Entity*>						update_queue;
 	FoodWeb     *food_web;
 	Environment *environment;
 
-	DisplayWindow       *eco_system_display_window;
-	Animation           *eco_system_animation;
-	Timer               *eco_system_timer;
-
-	EcoSystemRenderer   *eco_system_renderer;
-	EcoSystemTimerTask  *eco_system_timer_task;
+	AnimationDisplayWindow	*eco_system_window;
+	EcoSystemAnimation		*eco_system_animation;
+	EcoSystemTimerTask		*eco_system_timer_task;
+	Timer					*eco_system_timer;
 
 
 	std::mutex mtx;
-
-	Entity *find_entity_in_chunk(std::string type, int chunk_r, int chunk_c);
+	bool paused;
 };
 
-class EcoSystemRenderer : public RenderTask
+class EcoSystemAnimation : public Animation
 {
 public:
 	static bool render_order(const Entity *a, const Entity *b);
-	EcoSystemRenderer(EcoSystem *eco_system);
-	virtual Gdiplus::Image *render();
+	EcoSystemAnimation(EcoSystem *eco_system);
+	virtual void render(Gdiplus::Graphics *g);
 private:
 	EcoSystem *eco_system;
 };
-
 class EcoSystemTimerTask : public TimerTask
 {
 public:

@@ -1,47 +1,38 @@
 #include <windows.h>
 #include <gdiplus.h>
+#include <mutex>
 #include "Timer.h"
 
 #ifndef DS_ECOSYSTEM_ANIMATION
 #define DS_ECOSYSTEM_ANIMATION
 
-class RenderTask
-{
-public:
-	virtual Gdiplus::Image* render();
-	virtual ~RenderTask();
-	Gdiplus::Graphics* get_graphics_instance();
-protected:
-	RenderTask(unsigned int width, unsigned int height);
-private:
-	Gdiplus::Bitmap *buffer;
-	Gdiplus::Graphics *g;
-};
-
 class Animation
 {
+	friend class AnimationTimerTask;
 	class AnimationTimerTask : public TimerTask
 	{
 	public:
-		AnimationTimerTask(HWND hWnd, RenderTask &render_task);
+		AnimationTimerTask(Animation *animation);
 		void task();
 	private:
-		HWND hWnd;
-		RenderTask &render_task;
-		Gdiplus::Graphics g;
+		Animation *animation;
 	};
-
 public:
-	Animation(HWND hWNd, double fps, RenderTask &render_task);
+	Animation(unsigned int width, unsigned int height);
 	virtual ~Animation();
+	Gdiplus::Image *get_buffer_pointer();
+	virtual void render(Gdiplus::Graphics *g);
 	void start();
 	void stop();
-	bool is_running() const;
-
+	bool try_lock();
+	void unlock();
+protected:
+	unsigned int width, height;
+	std::mutex rendering_mutex;
 private:
-	RenderTask &render_task;
-	AnimationTimerTask animate;
-	Timer timer;
+	AnimationTimerTask *att;
+	Gdiplus::Image *buffer;
+	Gdiplus::Graphics *g;
+	Timer *timer;
 };
-
 #endif

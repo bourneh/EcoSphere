@@ -63,6 +63,9 @@
     <ClCompile Include="Grass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AnimationDisplayWindow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -114,6 +117,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Grass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationDisplayWindow.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

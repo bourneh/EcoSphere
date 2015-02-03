@@ -47,7 +47,10 @@ int main()
 	int ss;
 	while (cin >> ss)
 	{
-		be.set_temperature(ss);
+		if (ss == 1)
+			ecosystem.pause();
+		else if (ss == 2)
+			ecosystem.resume();
 	}
 	Gdiplus::GdiplusShutdown(gdiplusToken);
 	return 0;

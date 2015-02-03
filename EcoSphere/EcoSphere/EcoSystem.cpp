@@ -15,26 +15,26 @@
 
 const static double	ENERGY_SOIL_FERTILITY_CONVERSION_RATE = 0.20;
 
-EcoSystemRenderer::EcoSystemRenderer(EcoSystem *eco_system) :
-RenderTask(EcoSystem::DEFAULT_WIDTH, EcoSystem::DEFAULT_HEIGHT)
+EcoSystemAnimation::EcoSystemAnimation(EcoSystem *eco_system) :
+Animation(EcoSystem::DEFAULT_WIDTH, EcoSystem::DEFAULT_HEIGHT)
 {
 	this->eco_system = eco_system;
 }
 
-Gdiplus::Image *EcoSystemRenderer::render()
+void EcoSystemAnimation::render(Gdiplus::Graphics *g)
 {
 	using namespace Gdiplus;
-	Graphics *g = get_graphics_instance();
 
 
 	eco_system->mtx.lock();
+	rendering_mutex.lock();
 	eco_system->environment->render_environment_background(g);
 	std::vector<Entity*>::iterator it;
 	for (int r = 0; r < (EcoSystem::DEFAULT_WIDTH + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; r++)
 		for (int c = 0; c < (EcoSystem::DEFAULT_HEIGHT + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; c++)
 		{
 			std::vector<Entity*> &ents = eco_system->entities[r][c];
-			std::sort(ents.begin(), ents.end(), EcoSystemRenderer::render_order);
+			std::sort(ents.begin(), ents.end(), EcoSystemAnimation::render_order);
 			for (it = ents.begin(); it != ents.end(); it++)
 			{
 				Entity &ent = *(*it);
@@ -43,11 +43,11 @@ Gdiplus::Image *EcoSystemRenderer::render()
 		}
 	eco_system->environment->render_environment_effects(g);
 
+	rendering_mutex.unlock();
 	eco_system->mtx.unlock();
-	return RenderTask::render();
 }
 
-bool EcoSystemRenderer::render_order(const Entity *a, const Entity *b)
+bool EcoSystemAnimation::render_order(const Entity *a, const Entity *b)
 {
 	return a->get_position().y < b->get_position().y;
 }
@@ -64,13 +64,12 @@ void EcoSystemTimerTask::task()
 
 EcoSystem::EcoSystem()
 {
-	eco_system_renderer = new EcoSystemRenderer(this);
 	eco_system_timer_task = new EcoSystemTimerTask(this);
-	eco_system_display_window = new DisplayWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-	eco_system_display_window->display();
-	Sleep(500);
 	eco_system_timer = new Timer(100, *eco_system_timer_task);
-	eco_system_animation = new Animation(eco_system_display_window->get_window_handle(), 11, *eco_system_renderer);
+	eco_system_animation = new EcoSystemAnimation(this);
+	eco_system_window = new AnimationDisplayWindow(L"EcoSystem", DEFAULT_WIDTH, DEFAULT_HEIGHT, eco_system_animation);
+	eco_system_window->show();
+	paused = false;
 }
 
 Vector2D EcoSystem::random_position()
@@ -174,18 +173,23 @@ void EcoSystem::spawn_entity(Entity *entity)
 
 void EcoSystem::run()
 {
-	if (!eco_system_timer->is_running())
-		eco_system_timer->start();
-	if (!eco_system_animation->is_running())
-		eco_system_animation->start();
+	eco_system_timer->start();
+	eco_system_window->start();
 }
 
 void EcoSystem::pause()
 {
-	if (eco_system_timer->is_running())
-		eco_system_timer->stop();
+	mtx.lock();
+	paused = true;
 }
-
+void EcoSystem::resume()
+{
+	if (paused)
+	{
+		mtx.unlock();
+		paused = false;
+	}
+}
 void reset()
 {
 
