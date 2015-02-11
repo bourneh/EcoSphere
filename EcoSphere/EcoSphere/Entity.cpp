@@ -5,6 +5,7 @@ Entity::Entity(EcoSystem *eco_system) :
 DynamicEcoSystemObject(eco_system)
 {
 	set_alive();
+	set_age(1);
 	target = NULL;
 }
 Entity::~Entity() 

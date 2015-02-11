@@ -92,5 +92,10 @@ bool Consumer::avoid_predator(double speed)
 	}
 	return false;
 }
+
+void Consumer::multiply()//繁殖
+{
+	eco_system->spawn_entity(new_entity());
+}
 void Consumer::on_eaten()//生物被吃掉的时候会调用这个函数。如果想实现被吃掉时通知附近的朋友等等的功能可以重载这个函数。
 {}

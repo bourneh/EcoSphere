@@ -27,6 +27,7 @@ Entity *DemoTiger::new_entity() const
 }
 void DemoTiger::on_tick()
 {
+	set_age(get_age() + 1);
 	set_energy(get_energy() - get_speed() * get_speed() / 2);
 	if (!predate(15))
 		brownian_motion(10);

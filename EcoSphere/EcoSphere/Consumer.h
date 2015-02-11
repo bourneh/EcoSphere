@@ -20,9 +20,10 @@ public:
 	virtual void on_eaten();
 
 	//behaviors
-	virtual bool predate(double speed);
-	virtual bool brownian_motion(double speed);
-	virtual bool avoid_predator(double speed);
+	virtual bool predate(double speed);//捕食
+	virtual bool brownian_motion(double speed);//布朗运动
+	virtual bool avoid_predator(double speed);//躲避捕食者
+	virtual void multiply();//繁殖
 protected:
 	Consumer(EcoSystem *eco_system);
 private:
