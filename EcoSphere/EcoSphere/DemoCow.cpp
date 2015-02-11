@@ -30,7 +30,9 @@ Entity *DemoCow::new_entity() const
 void DemoCow::on_tick()
 {
 	set_energy(get_energy() - get_speed() * get_speed() / 2);
-	predate();
+	if(!avoid_predator(10))
+		if(!predate(5))
+			brownian_motion(3);
 }
 
 int	DemoCow::get_cost_of_being_preyed() const

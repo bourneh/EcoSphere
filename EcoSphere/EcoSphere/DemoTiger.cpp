@@ -28,7 +28,8 @@ Entity *DemoTiger::new_entity() const
 void DemoTiger::on_tick()
 {
 	set_energy(get_energy() - get_speed() * get_speed() / 2);
-	predate();
+	if (!predate(15))
+		brownian_motion(10);
 }
 
 int	DemoTiger::get_cost_of_being_preyed() const

@@ -119,7 +119,7 @@ void EcoSystem::on_tick()
 	environment->on_tick();
 	std::vector<Entity*>::iterator it;
 	std::list<Entity*>::iterator list_it;
-	for (list_it = update_list.begin(); list_it != update_list.end();++list_it)
+	for (list_it = update_list.begin(); list_it != update_list.end();)
 	{
 		if ((*list_it)->is_alive())
 		{
@@ -127,14 +127,13 @@ void EcoSystem::on_tick()
 			prevent_overstep(*list_it);
 			if ((*list_it)->get_energy() < 0.0)
 				(*list_it)->set_dead();
-		}
-	}
-	for (list_it = update_list.begin(); list_it != update_list.end();)
-	{
-		if (!((*list_it)->is_alive()))
-			list_it = update_list.erase(list_it);
-		else
 			++list_it;
+		}
+		else
+		{
+			dead_entities.push_back(*list_it);
+			list_it = update_list.erase(list_it);
+		}
 	}
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
@@ -146,7 +145,6 @@ void EcoSystem::on_tick()
 				Entity &ent = *(*it);
 				if (!ent.is_alive())
 				{
-					delete *it;
 					it = ents.erase(it);
 					continue;
 				}
@@ -240,6 +238,21 @@ Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_
 		return entity_founded[(unsigned int)(EcoSystem::random_double() * entity_founded.size())];
 }
 
+std::set<Entity*> EcoSystem::find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)
+{
+	std::set<Entity*> tmp;
+	if (chunk_r < 0 || chunk_c < 0 || chunk_r >= (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE || chunk_c >= (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE)
+		return tmp;
+	std::vector<Entity*> &ents = entities[chunk_r][chunk_c];
+	std::vector<Entity*>::iterator it;
+	for (it = ents.begin(); it != ents.end(); it++)
+	{
+		if (types.find((*it)->get_species_name()) != types.end())
+			tmp.insert(*it);
+	}
+	return tmp;
+}
+
 Entity *EcoSystem::find_entity(Entity *source, std::set<std::string> &types)
 {
 	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
@@ -277,16 +290,55 @@ Entity *EcoSystem::find_entity(Entity *source, std::set<std::string> &types)
 	return NULL;
 }
 
+std::set<Entity*> EcoSystem::find_all_entity(Entity *source, std::set<std::string> &types)
+{
+	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
+	std::set<Entity*> tmp[26];
+	tmp[0]  = find_all_entity_in_chunk(types, source_chunk_r, source_chunk_c);
+		    	   
+	tmp[1]  = find_all_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c);
+	tmp[2]  = find_all_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c);
+	tmp[3]  = find_all_entity_in_chunk(types, source_chunk_r, source_chunk_c - 1);
+	tmp[4]  = find_all_entity_in_chunk(types, source_chunk_r, source_chunk_c + 1);
+		    	   
+	tmp[5]  = find_all_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c - 1);
+	tmp[6]  = find_all_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c + 1);
+	tmp[7]  = find_all_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c - 1);
+	tmp[8]  = find_all_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c + 1);
+		    	   
+	tmp[9]  = find_all_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c);
+	tmp[10] = find_all_entity_in_chunk(types, source_chunk_r, source_chunk_c - 2);
+	tmp[11] = find_all_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c);
+	tmp[12] = find_all_entity_in_chunk(types, source_chunk_r, source_chunk_c + 2);
+				   
+	tmp[13] = find_all_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c - 1);
+	tmp[14] = find_all_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c + 1);
+	tmp[15] = find_all_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c - 2);
+	tmp[16] = find_all_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c + 2);
+	tmp[17] = find_all_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c - 2);
+	tmp[18] = find_all_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c + 2);
+	tmp[19] = find_all_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c - 1);
+	tmp[20] = find_all_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c + 1);
+				   
+	tmp[21] = find_all_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c - 2);
+	tmp[22] = find_all_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c + 2);
+	tmp[23] = find_all_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c - 2);
+	tmp[24] = find_all_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c + 2);
+
+	for (int i = 0; i < 25; i++)
+		tmp[25].insert(tmp[i].begin(), tmp[i].end());
+	return tmp[25];
+}
+
 Entity *EcoSystem::find_prey(Entity *source)
 {
-	if (source->get_target() == NULL)
+	if (!(source->get_target() != NULL && source->get_target()->is_alive()))
 	{
 		Entity *tmp = find_entity(source, food_web->get_prey_set(source));
 		source->set_target(tmp);
 		if (tmp != NULL)
-			tmp->add_ts(source);
+			tmp->add_predator(source);
 	}
-
 	return source->get_target();	
 }
 

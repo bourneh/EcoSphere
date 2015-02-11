@@ -17,13 +17,21 @@ public:
 	virtual void on_eaten();
 
 	//behaviors
-	virtual void predate();
-	virtual void brownian_motion();
-	virtual void avoid_predator();
+	virtual bool predate(double speed);
+	virtual bool brownian_motion(double speed);
+	virtual bool avoid_predator(double speed);
 protected:
 	Consumer(EcoSystem *eco_system);
 private:
 	double speed;
+
+	struct avoid_predator_str
+	{
+		int t;
+		Vector2D v;
+		bool b;
+		avoid_predator_str() : t(0) {}
+	}aps;
 };
 
 #endif // DS_ECOSYSTEM_COMSUMER

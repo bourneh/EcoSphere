@@ -32,14 +32,14 @@ public:
 	void	set_age(int age);
 	Entity *get_target() const;
 	void set_target(Entity *target);
-	void add_ts(Entity *entity);
+	void add_predator(Entity *entity);
 	bool is_alive() const;
 	void set_alive();
 	void set_dead();
 protected:
 	bool valid;
 	Entity *target;
-	std::set<Entity*> ts;
+	std::set<Entity*> predators;
 private:
 	int age;
 	double energy;

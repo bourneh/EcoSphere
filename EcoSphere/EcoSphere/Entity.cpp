@@ -9,11 +9,6 @@ DynamicEcoSystemObject(eco_system)
 }
 Entity::~Entity() 
 {
-	std::set<Entity*>::iterator it;
-	for (it = ts.begin(); it != ts.end(); it++)
-		(*it)->target = NULL;
-	if (target != NULL)
-		target->ts.erase(this);
 }
 
 bool Entity::is_alive() const
@@ -29,6 +24,11 @@ void Entity::set_alive()
 void Entity::set_dead()
 {
 	this->valid = false;
+	std::set<Entity*>::iterator it;
+	for (it = predators.begin(); it != predators.end(); it++)
+		(*it)->target = NULL;
+	if (target != NULL)
+		target->predators.erase(this);
 }
 
 double Entity::get_energy() const
@@ -69,7 +69,7 @@ void Entity::set_target(Entity *target)
 {
 	this->target = target;
 }
-void Entity::add_ts(Entity *entity)
+void Entity::add_predator(Entity *entity)
 {
-	ts.insert(entity);
+	predators.insert(entity);
 }

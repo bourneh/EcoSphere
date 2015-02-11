@@ -42,4 +42,7 @@ set<string> &FoodWeb::get_prey_set(Entity *source)
 	return predator_prey_web[source->get_species_name()];
 }
 
-
+std::set<std::string> &FoodWeb::get_predator_set(Entity *source)
+{
+	return prey_predator_web[source->get_species_name()];
+}

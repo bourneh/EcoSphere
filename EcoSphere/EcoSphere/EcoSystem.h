@@ -54,13 +54,15 @@ public:
 	void	spawn_entity(Entity *entity, Vector2D position);
 	bool	try_eat(Entity *predator, Entity *prey);
 	Entity *find_entity(Entity *source, std::set<std::string> &types);
+	std::set<Entity *> find_all_entity(Entity *source, std::set<std::string> &types);
 	Entity *find_prey(Entity *source);
 private:
 	Entity *find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);
-	
+	std::set<Entity*> find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);
 	std::map<std::string, Entity*>         species_list;
 	std::vector<Entity*>                    entities[50][50];
 	std::list<Entity*>						update_list;
+	std::vector<Entity*>					dead_entities;
 	FoodWeb     *food_web;
 	Environment *environment;
 
