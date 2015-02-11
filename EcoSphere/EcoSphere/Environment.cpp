@@ -14,12 +14,12 @@ DynamicEcoSystemObject(eco_system)
 Environment::~Environment()
 {}
 
-void Environment::render_environment_background(Gdiplus::Graphics *g) const
+void Environment::render_environment_background(Gdiplus::Graphics *g) const//环境的背景
 {
 	g->Clear(Gdiplus::Color(0, 255, 0));
 }
 
-void Environment::render_environment_effects(Gdiplus::Graphics *g) const
+void Environment::render_environment_effects(Gdiplus::Graphics *g) const//环境的其他效果
 {
 }
 

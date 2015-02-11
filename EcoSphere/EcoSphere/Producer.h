@@ -1,4 +1,8 @@
 #include "Entity.h"
+/*
+ *生产者。
+ *为实现多种生产者留的接口。
+*/
 #ifndef DS_ECOSYSTEM_PRODUCER
 #define DS_ECOSYSTEM_PRODUCER
 
@@ -8,15 +12,9 @@ public:
 	virtual void on_tick();
 	virtual bool is_producer() const;
 	virtual bool is_consumer() const;
-	unsigned int get_growth_cycle() const;
-	void set_growth_cycle(unsigned int growth_cycle);
 protected:
-	unsigned int growth_time;
-	
 	Producer(EcoSystem *eco_system);
 	virtual void multiply();
-private:
-	unsigned int growth_cycle;
 };
 
 #endif // DS_ECOSYSTEM_PRODUCER

@@ -2,6 +2,10 @@
 #include <map>
 #include <Windows.h>
 
+
+/*
+ *´°¿Ú
+*/
 #ifndef DS_ECOSPHERE_DISPLAYWINDOW
 #define DS_ECOSPHERE_DISPLAYWINDOW
 

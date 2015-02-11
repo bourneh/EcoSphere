@@ -2,6 +2,11 @@
 #include "EcoSystem.h"
 #include "ecosystem_gdiplus.h"
 
+/*
+ *草。
+ *生命周期为75tick。
+*/
+
 #ifndef DS_ECOSYSTEM_GRASS
 #define DS_ECOSYSTEM_GRASS
 

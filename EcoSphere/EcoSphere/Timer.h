@@ -1,3 +1,8 @@
+/*
+ *定时器。每隔一段时间调用一次对应TimerTask的task函数。
+ *精度大约为30ms。如果周期设置得比30ms短的话计时可能不准。
+*/
+
 #ifndef DS_ECOSYSTEM_TIMER
 #define DS_ECOSYSTEM_TIMER
 

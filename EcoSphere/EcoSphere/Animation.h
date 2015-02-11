@@ -2,7 +2,12 @@
 #include <gdiplus.h>
 #include <mutex>
 #include "Timer.h"
-
+/*===========================================================================
+ *Animation类，用于显示动画效果，由Timer触发，每个timer事件调用一次render函数。
+ *可以通过重载render函数实现自定义动画效果。
+ *render函数会把每帧画面画在一个buffer里，窗口把buffer画在显示区来显示动画。
+ *由于可能与显示动画的窗口不在同一线程，所以带了一个互斥锁。
+ */
 #ifndef DS_ECOSYSTEM_ANIMATION
 #define DS_ECOSYSTEM_ANIMATION
 

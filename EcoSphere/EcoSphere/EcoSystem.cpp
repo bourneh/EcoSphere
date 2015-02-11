@@ -21,15 +21,16 @@ Animation(EcoSystem::DEFAULT_WIDTH, EcoSystem::DEFAULT_HEIGHT)
 	this->eco_system = eco_system;
 }
 
-void EcoSystemAnimation::render(Gdiplus::Graphics *g)
+void EcoSystemAnimation::render(Gdiplus::Graphics *g)//渲染
 {
 	using namespace Gdiplus;
 
 
 	eco_system->mtx.lock();
 	rendering_mutex.lock();
-	eco_system->environment->render_environment_background(g);
+	eco_system->environment->render_environment_background(g);//先渲染环境背景
 	std::vector<Entity*>::iterator it;
+	//再渲染生物
 	for (int r = 0; r < (EcoSystem::DEFAULT_WIDTH + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; r++)
 		for (int c = 0; c < (EcoSystem::DEFAULT_HEIGHT + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; c++)
 		{
@@ -41,7 +42,7 @@ void EcoSystemAnimation::render(Gdiplus::Graphics *g)
 				g->DrawImage(ent.get_entity_image(), (int)ent.get_position().x, (int)ent.get_position().y);
 			}
 		}
-	eco_system->environment->render_environment_effects(g);
+	eco_system->environment->render_environment_effects(g);//最后渲染环境的其他效果
 
 	rendering_mutex.unlock();
 	eco_system->mtx.unlock();
@@ -113,12 +114,14 @@ double EcoSystem::random_angle()
 	return rand_double(generator);
 }
 
-void EcoSystem::on_tick()
+void EcoSystem::on_tick()//！！！！！！！生态系统的on_tick函数
 {
-	mtx.lock();
-	environment->on_tick();
+	mtx.lock();//由于渲染在另一个线程，而且和当前线程有共享资源，所以要加互斥锁。
+	environment->on_tick();//更新环境
 	std::vector<Entity*>::iterator it;
 	std::list<Entity*>::iterator list_it;
+
+	//=========================更新生物====================================
 	for (list_it = update_list.begin(); list_it != update_list.end();)
 	{
 		if ((*list_it)->is_alive())
@@ -135,6 +138,11 @@ void EcoSystem::on_tick()
 			list_it = update_list.erase(list_it);
 		}
 	}
+
+	//=========================更新生物结束===================================
+
+
+	//============生物可能发生了移动，要调整生物所在的块========================
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
 		for (int c = 0; c < (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE; c++)
@@ -159,10 +167,11 @@ void EcoSystem::on_tick()
 			}
 		}
 	}
+	//=============================================================================================
 	mtx.unlock();
 }
 
-void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
+void EcoSystem::spawn_entity(Entity *entity, Vector2D position)//在特定位置position生成生物entity
 {
 	prevent_overstep(position);
 	entity->set_position(position);
@@ -171,7 +180,7 @@ void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
 	update_list.push_back(entity);
 }
 
-void EcoSystem::spawn_entity(Entity *entity)
+void EcoSystem::spawn_entity(Entity *entity)//在随机位置生成生物entity
 {
 	spawn_entity(entity, random_position());
 }
@@ -201,13 +210,13 @@ void reset()
 }
 
 
-bool EcoSystem::try_eat(Entity *predator, Entity *prey)
+bool EcoSystem::try_eat(Entity *predator, Entity *prey)//尝试捕食
 {
-	const static double MIN_EATABLE_DISTANCE = 10.0;
-	if ((food_web->is_prey(prey, predator))
-		&& ((predator->get_position() - prey->get_position()).modulus() < MIN_EATABLE_DISTANCE)
+	const static double MIN_EATABLE_DISTANCE = 10.0;//两个生物间的距离小于10才能捕食
+	if ((food_web->is_prey(prey, predator)) //prey是否是predator的食物
+		&& ((predator->get_position() - prey->get_position()).modulus() < MIN_EATABLE_DISTANCE) //距离是否小于10
 		&& (predator->is_alive())
-		&& (prey->is_alive()))
+		&& (prey->is_alive()))//两个生物是否活着
 	{
 		predator->set_energy(predator->get_energy() - prey->get_cost_of_being_preyed());
 		if (predator->get_energy() < 0.0)
@@ -220,13 +229,17 @@ bool EcoSystem::try_eat(Entity *predator, Entity *prey)
 	return false;
 }
 
-Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)
+Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)//在一个特定块中查找类型在type里的生物
 {
+	//防止越界
 	if (chunk_r < 0 || chunk_c < 0 || chunk_r >= (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE || chunk_c >= (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE)
 		return NULL;
+
 	std::vector<Entity*> &ents = entities[chunk_r][chunk_c];
 	std::vector<Entity*>::iterator it;
 	std::vector<Entity*> entity_founded;
+
+	//把符合条件的生物加入entity_founded
 	for (it = ents.begin(); it != ents.end(); it++)
 	{
 		if (types.find((*it)->get_species_name()) != types.end())
@@ -235,7 +248,7 @@ Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_
 	if (entity_founded.empty())
 		return NULL;
 	else
-		return entity_founded[(unsigned int)(EcoSystem::random_double() * entity_founded.size())];
+		return entity_founded[(unsigned int)(EcoSystem::random_double() * entity_founded.size())];//返回随机一个
 }
 
 std::set<Entity*> EcoSystem::find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)
@@ -257,6 +270,8 @@ Entity *EcoSystem::find_entity(Entity *source, std::set<std::string> &types)
 {
 	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
 	Entity *tmp;
+
+	//在以当前生物所在的块为中心的5*5的块中查找生物。块的查找顺序为从近到远
 	if ( (tmp = find_entity_in_chunk(types, source_chunk_r, source_chunk_c))			!= NULL) return tmp;
 										 
 	if ( (tmp = find_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c))		!= NULL) return tmp;
@@ -330,7 +345,7 @@ std::set<Entity*> EcoSystem::find_all_entity(Entity *source, std::set<std::strin
 	return tmp[25];
 }
 
-Entity *EcoSystem::find_prey(Entity *source)
+Entity *EcoSystem::find_prey(Entity *source)//查找生物source的食物。调用的是find_entity
 {
 	if (!(source->get_target() != NULL && source->get_target()->is_alive()))
 	{

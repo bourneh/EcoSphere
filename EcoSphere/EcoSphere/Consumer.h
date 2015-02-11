@@ -1,6 +1,9 @@
 #include "Vector2D.h"
 #include "Entity.h"
-
+/*
+ *消费者。主要为动物。
+ *这里实现的动物的行为有捕食、躲避捕食者、随机运动。
+*/
 #ifndef DS_ECOSYSTEM_COMSUMER
 #define DS_ECOSYSTEM_COMSUMER
 
