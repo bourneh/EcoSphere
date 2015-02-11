@@ -4,9 +4,8 @@ DemoTiger::DemoTiger(EcoSystem *eco_system) :
 Consumer(eco_system)
 {
 	set_alive();
-	set_energy(100000);
+	set_energy(20000);
 	set_speed(15.0);
-	set_strength(15);
 }
 
 DemoTiger::~DemoTiger() {}
@@ -26,11 +25,17 @@ Entity *DemoTiger::new_entity() const
 {
 	return new DemoTiger(eco_system);
 }
-
 void DemoTiger::on_tick()
 {
+	set_energy(get_energy() - get_speed() * get_speed() / 2);
 	predate();
+}
 
-	if (get_energy() < 300)
-		set_died();
+int	DemoTiger::get_cost_of_being_preyed() const
+{
+	return 2000;
+}
+int	DemoTiger::get_gain_after_being_preyed() const
+{
+	return 3000;
 }

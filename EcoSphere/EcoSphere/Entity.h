@@ -1,4 +1,5 @@
 #include <string>
+#include <set>
 #include "Vector2D.h"
 #include "EcoSystemObject.h"
 #include "ecosystem_gdiplus.h"
@@ -20,6 +21,8 @@ public:
 	virtual Entity* new_entity() const = 0;
 	virtual bool	is_producer() const = 0;
 	virtual bool	is_consumer() const = 0;
+	virtual int		get_cost_of_being_preyed() const = 0;
+	virtual int		get_gain_after_being_preyed() const = 0;
 
 	Vector2D get_position() const;
 	void set_position(Vector2D position);
@@ -27,11 +30,16 @@ public:
 	void set_energy(double energy);
 	int		get_age() const;
 	void	set_age(int age);
+	Entity *get_target() const;
+	void set_target(Entity *target);
+	void add_ts(Entity *entity);
 	bool is_alive() const;
 	void set_alive();
-	void set_died();
+	void set_dead();
 protected:
 	bool valid;
+	Entity *target;
+	std::set<Entity*> ts;
 private:
 	int age;
 	double energy;

@@ -15,15 +15,6 @@ bool Consumer::is_consumer() const
 }
 
 
-int Consumer::get_strength() const
-{
-	return strength;
-}
-
-void Consumer::set_strength(int strength)
-{
-	this->strength = strength;
-}
 
 double Consumer::get_speed() const
 {
@@ -34,7 +25,6 @@ void Consumer::set_speed(double speed)
 {
 	this->speed = speed;
 }
-
 void Consumer::predate()
 {
 	set_energy(get_energy() - 1);
@@ -46,8 +36,8 @@ void Consumer::predate()
 			Vector2D target_position = food->get_position();
 			Vector2D distance = target_position - this->get_position();
 			Vector2D displacement = distance * (1.0 / distance.modulus()) * get_speed();
+			//if (displacement.modulus() < get_speed())
 			target_position = get_position() + displacement;
-			EcoSystem::prevent_overstep(target_position);
 			this->set_position(target_position);
 		}
 	}
@@ -65,8 +55,9 @@ void Consumer::brownian_motion()
 	set_position(target_position);
 }
 
-void Consumer::on_eaten()
-{}
+void Consumer::avoid_predator()
+{
 
-void Consumer::on_killed()
+}
+void Consumer::on_eaten()
 {}

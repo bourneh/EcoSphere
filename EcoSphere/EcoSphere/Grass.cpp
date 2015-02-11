@@ -28,5 +28,15 @@ void Grass::on_tick()
 {
 	set_age(get_age() + 1);
 	if (get_age() > LIFE_SPAN)
-		set_died();
+		set_dead();
+}
+
+int Grass::get_cost_of_being_preyed() const
+{
+	return 0;
+}
+
+int Grass::get_gain_after_being_preyed() const
+{
+	return 100;
 }

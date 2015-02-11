@@ -14,6 +14,8 @@ public:
 	virtual Gdiplus::Image* get_entity_image() const;
 	virtual Entity* new_entity() const;
 	virtual void on_tick();
+	virtual int		get_cost_of_being_preyed() const;
+	virtual int		get_gain_after_being_preyed() const;
 private:
 };
 

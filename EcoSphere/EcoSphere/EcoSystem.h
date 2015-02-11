@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include <list>
 #include <vector>
 #include <mutex>
 #include <string>
@@ -52,15 +53,14 @@ public:
 	void	spawn_entity(Entity *entity);
 	void	spawn_entity(Entity *entity, Vector2D position);
 	bool	try_eat(Entity *predator, Entity *prey);
-	void	fight(Consumer *a, Consumer *b);
-	Entity *find_entity(Entity *source, std::string type);
+	Entity *find_entity(Entity *source, std::set<std::string> &types);
 	Entity *find_prey(Entity *source);
 private:
-	Entity *find_entity_in_chunk(std::string type, int chunk_r, int chunk_c);
+	Entity *find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);
 	
 	std::map<std::string, Entity*>         species_list;
 	std::vector<Entity*>                    entities[50][50];
-	std::set<Entity*>						update_queue;
+	std::list<Entity*>						update_list;
 	FoodWeb     *food_web;
 	Environment *environment;
 

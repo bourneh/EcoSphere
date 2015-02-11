@@ -1,11 +1,20 @@
 #include "Entity.h"
 #include "Vector2D.h"
+#include <iostream>
 Entity::Entity(EcoSystem *eco_system) :
 DynamicEcoSystemObject(eco_system)
 {
 	set_alive();
+	target = NULL;
 }
-Entity::~Entity() {}
+Entity::~Entity() 
+{
+	std::set<Entity*>::iterator it;
+	for (it = ts.begin(); it != ts.end(); it++)
+		(*it)->target = NULL;
+	if (target != NULL)
+		target->ts.erase(this);
+}
 
 bool Entity::is_alive() const
 {
@@ -17,7 +26,7 @@ void Entity::set_alive()
 	this->valid = true;
 }
 
-void Entity::set_died()
+void Entity::set_dead()
 {
 	this->valid = false;
 }
@@ -50,4 +59,17 @@ int Entity::get_age() const
 void Entity::set_age(int age)
 {
 	this->age = age;
+}
+
+Entity *Entity::get_target() const
+{
+	return target;
+}
+void Entity::set_target(Entity *target)
+{
+	this->target = target;
+}
+void Entity::add_ts(Entity *entity)
+{
+	ts.insert(entity);
 }

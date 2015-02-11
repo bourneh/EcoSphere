@@ -5,9 +5,8 @@ DemoCow::DemoCow(EcoSystem *eco_system) :
 Consumer(eco_system)
 {
 	set_alive();
-	set_energy(7000);
+	set_energy(15000);
 	set_speed(5.0);
-	set_strength(3);
 }
 
 DemoCow::~DemoCow() {}
@@ -30,8 +29,15 @@ Entity *DemoCow::new_entity() const
 
 void DemoCow::on_tick()
 {
+	set_energy(get_energy() - get_speed() * get_speed() / 2);
 	predate();
+}
 
-	if (get_energy() < 300)
-		set_died();
+int	DemoCow::get_cost_of_being_preyed() const
+{
+	return 500;
+}
+int	DemoCow::get_gain_after_being_preyed() const
+{
+	return 1000;
 }

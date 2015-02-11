@@ -34,7 +34,7 @@ void EcoSystemAnimation::render(Gdiplus::Graphics *g)
 		for (int c = 0; c < (EcoSystem::DEFAULT_HEIGHT + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; c++)
 		{
 			std::vector<Entity*> &ents = eco_system->entities[r][c];
-			std::sort(ents.begin(), ents.end(), EcoSystemAnimation::render_order);
+			//std::sort(ents.begin(), ents.end(), EcoSystemAnimation::render_order);
 			for (it = ents.begin(); it != ents.end(); it++)
 			{
 				Entity &ent = *(*it);
@@ -118,17 +118,23 @@ void EcoSystem::on_tick()
 	mtx.lock();
 	environment->on_tick();
 	std::vector<Entity*>::iterator it;
-	std::set<Entity*>::iterator set_it;
-	for (set_it = update_queue.begin(); set_it != update_queue.end();)
+	std::list<Entity*>::iterator list_it;
+	for (list_it = update_list.begin(); list_it != update_list.end();++list_it)
 	{
-		if (!((*set_it)->is_alive()))
-			set_it = update_queue.erase(set_it);
-		else
+		if ((*list_it)->is_alive())
 		{
-			(*set_it)->on_tick();
-			prevent_overstep(*set_it);
-			++set_it;
+			(*list_it)->on_tick();
+			prevent_overstep(*list_it);
+			if ((*list_it)->get_energy() < 0.0)
+				(*list_it)->set_dead();
 		}
+	}
+	for (list_it = update_list.begin(); list_it != update_list.end();)
+	{
+		if (!((*list_it)->is_alive()))
+			list_it = update_list.erase(list_it);
+		else
+			++list_it;
 	}
 	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
@@ -140,6 +146,7 @@ void EcoSystem::on_tick()
 				Entity &ent = *(*it);
 				if (!ent.is_alive())
 				{
+					delete *it;
 					it = ents.erase(it);
 					continue;
 				}
@@ -163,7 +170,7 @@ void EcoSystem::spawn_entity(Entity *entity, Vector2D position)
 	entity->set_position(position);
 	int chunk_r = (int)entity->get_position().x / CHUNK_SIZE, chunk_c = (int)entity->get_position().y / CHUNK_SIZE;
 	entities[chunk_r][chunk_c].push_back(entity);
-	update_queue.insert(entity);
+	update_list.push_back(entity);
 }
 
 void EcoSystem::spawn_entity(Entity *entity)
@@ -199,121 +206,88 @@ void reset()
 bool EcoSystem::try_eat(Entity *predator, Entity *prey)
 {
 	const static double MIN_EATABLE_DISTANCE = 10.0;
-	const static double ENERGY_TRANSFER_RATE = 0.20;
 	if ((food_web->is_prey(prey, predator))
 		&& ((predator->get_position() - prey->get_position()).modulus() < MIN_EATABLE_DISTANCE)
 		&& (predator->is_alive())
 		&& (prey->is_alive()))
 	{
-		if (prey->is_consumer())
-		{
-			Consumer *tmp_prey = dynamic_cast<Consumer*>(prey);
-			Consumer *tmp_predator = dynamic_cast<Consumer*>(predator);
-			if (tmp_prey != NULL && tmp_predator != NULL)
-			{
-				fight(tmp_prey, tmp_predator);
-				if (predator->is_alive())
-				{
-					tmp_prey->on_eaten();
-					predator->set_energy(predator->get_energy() + prey->get_energy() * ENERGY_TRANSFER_RATE);
-				}
-			}
-		}
+		predator->set_energy(predator->get_energy() - prey->get_cost_of_being_preyed());
+		if (predator->get_energy() < 0.0)
+			predator->set_dead();
 		else
-		{
-			predator->set_energy(predator->get_energy() + prey->get_energy() * ENERGY_TRANSFER_RATE);
-			prey->set_died();
-		}
+			predator->set_energy(predator->get_energy() + prey->get_gain_after_being_preyed());
+		prey->set_dead();
 		return true;
 	}
 	return false;
 }
 
-void EcoSystem::fight(Consumer *a, Consumer *b)
-{
-	double bound = a->get_strength() / (double)(a->get_strength() + b->get_strength());
-	const static double KILL_COST_PER_UNIT_STRENGTH = 100.0;
-	if (random_double() < bound)
-	{
-		b->on_killed();
-		b->set_died();
-		a->set_energy(a->get_energy() - KILL_COST_PER_UNIT_STRENGTH * b->get_strength());
-		if (a->get_energy() < 0)
-			a->set_died();
-	}
-	else
-	{
-		a->on_killed();
-		a->set_died();
-		b->set_energy(b->get_energy() - KILL_COST_PER_UNIT_STRENGTH * a->get_strength());
-		if (b->get_energy() < 0)
-			b->set_died();
-	}
-}
-
-Entity *EcoSystem::find_entity_in_chunk(std::string type, int chunk_r, int chunk_c)
+Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)
 {
 	if (chunk_r < 0 || chunk_c < 0 || chunk_r >= (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE || chunk_c >= (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE)
 		return NULL;
 	std::vector<Entity*> &ents = entities[chunk_r][chunk_c];
 	std::vector<Entity*>::iterator it;
+	std::vector<Entity*> entity_founded;
 	for (it = ents.begin(); it != ents.end(); it++)
 	{
-		if ((*it)->get_species_name() == type)
-			return (*it);
+		if (types.find((*it)->get_species_name()) != types.end())
+			entity_founded.push_back(*it);
 	}
-	return NULL;
+	if (entity_founded.empty())
+		return NULL;
+	else
+		return entity_founded[(unsigned int)(EcoSystem::random_double() * entity_founded.size())];
 }
 
-Entity *EcoSystem::find_entity(Entity *source, std::string type)
+Entity *EcoSystem::find_entity(Entity *source, std::set<std::string> &types)
 {
 	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
 	Entity *tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c))			!= NULL) return tmp;
-	
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c))		!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c))		!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c - 1))		!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c + 1))		!= NULL) return tmp;
-	
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c - 1))	!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c + 1))	!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c - 1))	!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c + 1))	!= NULL) return tmp;
-	
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c))		!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c - 2))		!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c))		!= NULL) return tmp;
-	if ( (tmp = find_entity_in_chunk(type, source_chunk_r, source_chunk_c + 2))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r, source_chunk_c))			!= NULL) return tmp;
+										 
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r, source_chunk_c - 1))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r, source_chunk_c + 1))		!= NULL) return tmp;
+										 
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c - 1))	!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c + 1))	!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c - 1))	!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c + 1))	!= NULL) return tmp;
+										 
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r, source_chunk_c - 2))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c))		!= NULL) return tmp;
+	if ( (tmp = find_entity_in_chunk(types, source_chunk_r, source_chunk_c + 2))		!= NULL) return tmp;
 
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c - 1)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c + 1)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c - 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 1, source_chunk_c + 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c - 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 1, source_chunk_c + 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c - 1)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c + 1)) != NULL) return tmp;
-
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c - 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r - 2, source_chunk_c + 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c - 2)) != NULL) return tmp;
-	if ((tmp = find_entity_in_chunk(type, source_chunk_r + 2, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c - 1)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c + 1)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r + 1, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r - 1, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c - 1)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c + 1)) != NULL) return tmp;
+										
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r - 2, source_chunk_c + 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c - 2)) != NULL) return tmp;
+	if ((tmp = find_entity_in_chunk(types, source_chunk_r + 2, source_chunk_c + 2)) != NULL) return tmp;
 	return NULL;
 }
 
 Entity *EcoSystem::find_prey(Entity *source)
 {
-	using namespace std;
-	set<string> &s = food_web->get_prey_set(source);
-	set<string>::iterator it;
-	Entity *tmp;
-	for (it = s.begin(); it != s.end(); it++)
+	if (source->get_target() == NULL)
 	{
-		if ((tmp = find_entity(source, *it)) != NULL)
-			return tmp;
+		Entity *tmp = find_entity(source, food_web->get_prey_set(source));
+		source->set_target(tmp);
+		if (tmp != NULL)
+			tmp->add_ts(source);
 	}
-	return NULL;
+
+	return source->get_target();	
 }
 
 FoodWeb *EcoSystem::get_food_web_instance()
