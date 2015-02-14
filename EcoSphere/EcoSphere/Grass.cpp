@@ -6,7 +6,6 @@ Producer(eco_system)
 {
 	set_age(0);
 	set_energy(100);
-	set_growth_cycle(5000);
 }
 Gdiplus::Image *Grass::get_entity_image() const
 {

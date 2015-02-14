@@ -16,7 +16,7 @@
 const static double	ENERGY_SOIL_FERTILITY_CONVERSION_RATE = 0.20;
 
 EcoSystemAnimation::EcoSystemAnimation(EcoSystem *eco_system) :
-Animation(EcoSystem::DEFAULT_WIDTH, EcoSystem::DEFAULT_HEIGHT)
+Animation(EcoSystem::DEFAULT_WIDTH + 35, EcoSystem::DEFAULT_HEIGHT + 58)
 {
 	this->eco_system = eco_system;
 }
@@ -29,19 +29,26 @@ void EcoSystemAnimation::render(Gdiplus::Graphics *g)//渲染
 	eco_system->mtx.lock();
 	rendering_mutex.lock();
 	eco_system->environment->render_environment_background(g);//先渲染环境背景
-	std::vector<Entity*>::iterator it;
+	std::list<Entity*>::iterator it;
 	//再渲染生物
-	for (int r = 0; r < (EcoSystem::DEFAULT_WIDTH + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; r++)
+	/*for (int r = 0; r < (EcoSystem::DEFAULT_WIDTH + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; r++)
 		for (int c = 0; c < (EcoSystem::DEFAULT_HEIGHT + EcoSystem::CHUNK_SIZE) / EcoSystem::CHUNK_SIZE; c++)
 		{
-			std::vector<Entity*> &ents = eco_system->entities[r][c];
+			std::set<Entity*> &ents = eco_system->chunk[r][c].entities;
 			//std::sort(ents.begin(), ents.end(), EcoSystemAnimation::render_order);
 			for (it = ents.begin(); it != ents.end(); it++)
 			{
 				Entity &ent = *(*it);
 				g->DrawImage(ent.get_entity_image(), (int)ent.get_position().x, (int)ent.get_position().y);
 			}
-		}
+		}*/
+
+	for (it = eco_system->update_list.begin(); it != eco_system->update_list.end(); it++)
+	{
+		Entity &ent = *(*it);
+		g->DrawImage(ent.get_entity_image(), (int)ent.get_position().x, (int)ent.get_position().y);
+	}
+
 	eco_system->environment->render_environment_effects(g);//最后渲染环境的其他效果
 
 	rendering_mutex.unlock();
@@ -68,7 +75,7 @@ EcoSystem::EcoSystem()
 	eco_system_timer_task = new EcoSystemTimerTask(this);
 	eco_system_timer = new Timer(100, *eco_system_timer_task);
 	eco_system_animation = new EcoSystemAnimation(this);
-	eco_system_window = new AnimationDisplayWindow(L"EcoSystem", DEFAULT_WIDTH, DEFAULT_HEIGHT, eco_system_animation);
+	eco_system_window = new AnimationDisplayWindow(L"EcoSystem", DEFAULT_WIDTH + 35, DEFAULT_HEIGHT + 58, eco_system_animation);
 	eco_system_window->show();
 	paused = false;
 }
@@ -126,14 +133,36 @@ void EcoSystem::on_tick()//！！！！！！！生态系统的on_tick函数
 	{
 		if ((*list_it)->is_alive())
 		{
+			Vector2D prev_pos = (*list_it)->get_position();
+			int prev_chunk_r = (int)((*list_it)->get_position().x / CHUNK_SIZE);
+			int prev_chunk_c = (int)((*list_it)->get_position().y / CHUNK_SIZE);
+			chunk[prev_chunk_r][prev_chunk_c].position_sum[(*list_it)->get_species_name()] -= prev_pos;
 			(*list_it)->on_tick();
 			prevent_overstep(*list_it);
-			if ((*list_it)->get_energy() < 0.0)
-				(*list_it)->set_dead();
+			int current_chunk_r = (int)((*list_it)->get_position().x / CHUNK_SIZE);
+			int current_chunk_c = (int)((*list_it)->get_position().y / CHUNK_SIZE);
+			chunk[current_chunk_r][current_chunk_c].position_sum[(*list_it)->get_species_name()] += (*list_it)->get_position();
+			//if ((*list_it)->get_energy() < 0.0)
+			//	(*list_it)->set_dead();
+
+			if (prev_chunk_r != current_chunk_r || prev_chunk_c != current_chunk_c)
+			{
+				chunk[prev_chunk_r][prev_chunk_c].entities.erase(*list_it);
+				chunk[prev_chunk_r][prev_chunk_c].count[(*list_it)->get_species_name()]--;
+				
+				chunk[current_chunk_r][current_chunk_c].entities.insert(*list_it);
+				chunk[current_chunk_r][current_chunk_c].count[(*list_it)->get_species_name()]++;
+			}
+
 			++list_it;
 		}
 		else
 		{
+			int r = (int)((*list_it)->get_position().x / CHUNK_SIZE);
+			int c = (int)((*list_it)->get_position().y / CHUNK_SIZE);
+			chunk[r][c].entities.erase(*list_it);
+			chunk[r][c].count[(*list_it)->get_species_name()]--;
+			chunk[r][c].position_sum[(*list_it)->get_species_name()] -= (*list_it)->get_position();
 			dead_entities.push_back(*list_it);
 			list_it = update_list.erase(list_it);
 		}
@@ -143,11 +172,11 @@ void EcoSystem::on_tick()//！！！！！！！生态系统的on_tick函数
 
 
 	//============生物可能发生了移动，要调整生物所在的块========================
-	for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
+	/*for (int r = 0; r < (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE; r++)
 	{
 		for (int c = 0; c < (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE; c++)
 		{
-			std::vector<Entity*> &ents = entities[r][c];
+			std::set<Entity*> &ents = entities[r][c];
 			for (it = ents.begin(); it != ents.end();)
 			{
 				Entity &ent = *(*it);
@@ -166,7 +195,7 @@ void EcoSystem::on_tick()//！！！！！！！生态系统的on_tick函数
 					it++;
 			}
 		}
-	}
+	}*/
 	//=============================================================================================
 	mtx.unlock();
 }
@@ -176,7 +205,12 @@ void EcoSystem::spawn_entity(Entity *entity, Vector2D position)//在特定位置posit
 	prevent_overstep(position);
 	entity->set_position(position);
 	int chunk_r = (int)entity->get_position().x / CHUNK_SIZE, chunk_c = (int)entity->get_position().y / CHUNK_SIZE;
-	entities[chunk_r][chunk_c].push_back(entity);
+	//entities[chunk_r][chunk_c].push_back(entity);
+	
+	chunk[chunk_r][chunk_c].entities.insert(entity);
+	chunk[chunk_r][chunk_c].position_sum[entity->get_species_name()] += entity->get_position();
+	chunk[chunk_r][chunk_c].count[entity->get_species_name()]++;
+
 	update_list.push_back(entity);
 }
 
@@ -235,10 +269,17 @@ Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_
 	if (chunk_r < 0 || chunk_c < 0 || chunk_r >= (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE || chunk_c >= (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE)
 		return NULL;
 
-	std::vector<Entity*> &ents = entities[chunk_r][chunk_c];
-	std::vector<Entity*>::iterator it;
+	std::set<Entity*> &ents = chunk[chunk_r][chunk_c].entities;
+	std::set<Entity*>::iterator it;
 	std::vector<Entity*> entity_founded;
-
+	/*for (it = ents.begin(); it != ents.end(); it++)
+	{
+		if (types.find((*it)->get_species_name()) != types.end())
+			return (*it);
+			//entity_founded.push_back(*it);
+	}
+	return NULL;*/
+	
 	//把符合条件的生物加入entity_founded
 	for (it = ents.begin(); it != ents.end(); it++)
 	{
@@ -249,9 +290,10 @@ Entity *EcoSystem::find_entity_in_chunk(std::set<std::string> &types, int chunk_
 		return NULL;
 	else
 		return entity_founded[(unsigned int)(EcoSystem::random_double() * entity_founded.size())];//返回随机一个
+		
 }
 
-std::set<Entity*> EcoSystem::find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)
+/*std::set<Entity*> EcoSystem::find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c)
 {
 	std::set<Entity*> tmp;
 	if (chunk_r < 0 || chunk_c < 0 || chunk_r >= (DEFAULT_WIDTH + CHUNK_SIZE) / CHUNK_SIZE || chunk_c >= (DEFAULT_HEIGHT + CHUNK_SIZE) / CHUNK_SIZE)
@@ -265,7 +307,24 @@ std::set<Entity*> EcoSystem::find_all_entity_in_chunk(std::set<std::string> &typ
 	}
 	return tmp;
 }
+*/
 
+int EcoSystem::get_chunk_entity_count(int chunk_r, int chunk_c, std::set<std::string> &types)
+{
+	std::set<std::string>::iterator it;
+	int sum = 0;
+	for (it = types.begin(); it != types.end(); it++)
+		sum += chunk[chunk_r][chunk_c].count[*it];
+	return sum;
+}
+Vector2D EcoSystem::get_chunk_entity_position_sum(int chunk_r, int chunk_c, std::set<std::string> &types)
+{
+	std::set<std::string>::iterator it;
+	Vector2D sum;
+	for (it = types.begin(); it != types.end(); it++)
+		sum += chunk[chunk_r][chunk_c].position_sum[*it];
+	return sum;
+}
 Entity *EcoSystem::find_entity(Entity *source, std::set<std::string> &types)
 {
 	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
@@ -305,7 +364,7 @@ Entity *EcoSystem::find_entity(Entity *source, std::set<std::string> &types)
 	return NULL;
 }
 
-std::set<Entity*> EcoSystem::find_all_entity(Entity *source, std::set<std::string> &types)
+/*std::set<Entity*> EcoSystem::find_all_entity(Entity *source, std::set<std::string> &types)
 {
 	int source_chunk_r = (int)source->get_position().x / CHUNK_SIZE, source_chunk_c = (int)source->get_position().y / CHUNK_SIZE;
 	std::set<Entity*> tmp[26];
@@ -343,7 +402,7 @@ std::set<Entity*> EcoSystem::find_all_entity(Entity *source, std::set<std::strin
 	for (int i = 0; i < 25; i++)
 		tmp[25].insert(tmp[i].begin(), tmp[i].end());
 	return tmp[25];
-}
+}*/
 
 Entity *EcoSystem::find_prey(Entity *source)//查找生物source的食物。调用的是find_entity
 {
@@ -375,4 +434,58 @@ Environment *EcoSystem::get_environment_instance()
 void EcoSystem::set_environment(Environment *environment)
 {
 	this->environment = environment;
+}
+
+void EcoSystem::register_species(Entity* species)
+{
+	if (species_list.find(species->get_species_name()) != species_list.end())
+		return;
+
+	species_list[species->get_species_name()] = species;
+
+	for (int i = 0; i < 50; i++)
+		for (int j = 0; j < 50; j++)
+		{
+			chunk[i][j].position_sum[species->get_species_name()] = Vector2D(0, 0);
+			chunk[i][j].count[species->get_species_name()] = 0;
+		}
+}
+
+int EcoSystem::get_around_predators_count(Entity* source)
+{
+	int chunk_r = (int)source->get_position().x / CHUNK_SIZE, chunk_c = (int)source->get_position().y / CHUNK_SIZE;
+	int r1 = (chunk_r - 2) < 0 ? 0 : chunk_r - 2;
+	int r2 = (chunk_r + 2) >= 50 ? 49 : chunk_r + 2;
+	int c1 = (chunk_c - 2) < 0 ? 0 : chunk_c - 2;
+	int c2 = (chunk_c + 2) >= 50 ? 49 : chunk_c + 2;
+
+	std::set<std::string> &predators = food_web->get_predator_set(source);
+	std::set<std::string>::iterator it;
+	int sum = 0;
+
+	for (int r = r1; r <= r2; r++)
+		for (int c = c1; c != c2; c++)
+			for (it = predators.begin(); it != predators.end(); it++)
+				sum += chunk[r][c].count[*it];
+
+	return sum;
+}
+Vector2D EcoSystem::get_around_predators_position_sum(Entity* source)
+{
+	int chunk_r = (int)source->get_position().x / CHUNK_SIZE, chunk_c = (int)source->get_position().y / CHUNK_SIZE;
+	int r1 = (chunk_r - 2) < 0 ? 0 : chunk_r - 2;
+	int r2 = (chunk_r + 2) >= 50 ? 49 : chunk_r + 2;
+	int c1 = (chunk_c - 2) < 0 ? 0 : chunk_c - 2;
+	int c2 = (chunk_c + 2) >= 50 ? 49 : chunk_c + 2;
+
+	std::set<std::string> &predators = food_web->get_predator_set(source);
+	std::set<std::string>::iterator it;
+	Vector2D sum = 0;
+
+	for (int r = r1; r <= r2; r++)
+		for (int c = c1; c != c2; c++)
+			for (it = predators.begin(); it != predators.end(); it++)
+				sum += chunk[r][c].position_sum[*it];
+
+	return sum;
 }

@@ -26,16 +26,15 @@ public:
 	virtual void multiply();//·±Ö³
 protected:
 	Consumer(EcoSystem *eco_system);
-private:
-	double speed;
-
 	struct avoid_predator_str
 	{
 		int t;
 		Vector2D v;
 		bool b;
-		avoid_predator_str() : t(0) {}
+		avoid_predator_str() : t(6) {}
 	}aps;
+private:
+	double speed;
 };
 
 #endif // DS_ECOSYSTEM_COMSUMER

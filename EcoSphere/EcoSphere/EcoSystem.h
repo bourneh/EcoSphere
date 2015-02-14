@@ -54,20 +54,32 @@ public:
 	Environment*	get_environment_instance();//环境
 	void			set_environment(Environment *environment);
 
-	//void register_species(Entity *species);
+	void	register_species(Entity *species);
 	void	spawn_entity(Entity *entity);//在生态系统的随机位置生成生物entity，内部调用了下面那个函数
 	void	spawn_entity(Entity *entity, Vector2D position);//在生态系统的特定位置生成生物entity
 	bool	try_eat(Entity *predator, Entity *prey);//predator尝试捕食prey，具体请看实现
 	Entity *find_entity(Entity *source, std::set<std::string> &types);//在以生物source所在块为中心的5*5的块中随机查找一个类型在types里的生物。
-	std::set<Entity *> find_all_entity(Entity *source, std::set<std::string> &types);//在以生物source所在块为中心的5*5的块中查找所有类型在types里的生物。
+	//std::set<Entity *> find_all_entity(Entity *source, std::set<std::string> &types);//在以生物source所在块为中心的5*5的块中查找所有类型在types里的生物。
 	Entity *find_prey(Entity *source);////在以生物source所在块为中心的5*5的块中随机查找一个source的食物。
+	int get_around_predators_count(Entity* source);
+	Vector2D get_around_predators_position_sum(Entity* source);
 private:
+	int get_chunk_entity_count(int chunk_r, int chunk_c, std::set<std::string> &types);
+	Vector2D get_chunk_entity_position_sum(int chunk_r, int chunk_c, std::set<std::string> &types);
 	Entity *find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);//在一个块中随机查找一个类型在types里的生物。
-	std::set<Entity*> find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);//在一个块中随机查找所有类型在types里的生物。
+	//std::set<Entity*> find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);//在一个块中随机查找所有类型在types里的生物。
+
 	std::map<std::string, Entity*>         species_list;//生物种类列表
-	std::vector<Entity*>                    entities[50][50];//块
+	//std::vector<Entity*>                    entities[50][50];//块
 	std::list<Entity*>						update_list;//活着的生物列表，每个tick更新一次
 	std::vector<Entity*>					dead_entities;//死掉的生物列表，在EcoSystem类被销毁时它们占用的内存才会被释放
+
+	struct chunk_structure
+	{
+		std::map<std::string, Vector2D> position_sum;
+		std::map<std::string, int> count;
+		std::set<Entity*>entities;
+	}chunk[50][50];
 	FoodWeb     *food_web;
 	Environment *environment;
 

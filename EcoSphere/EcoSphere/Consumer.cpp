@@ -74,14 +74,14 @@ bool Consumer::avoid_predator(double speed)
 		set_position(get_position() + aps.v);
 		return true;
 	}
-	std::set<Entity*> predators = eco_system->find_all_entity(this, eco_system->get_food_web_instance()->get_predator_set(this));
-	if (!predators.empty())
+	//std::set<Entity*> predators = eco_system->find_all_entity(this, eco_system->get_food_web_instance()->get_predator_set(this));
+	int predators_count = eco_system->get_around_predators_count(this);
+	if (predators_count != 0)
 	{
 		aps.t = 0;
 		set_speed(speed);
-		Vector2D d;
-		for (std::set<Entity*>::iterator it = predators.begin(); it != predators.end(); it++)
-			d += get_position() - (*it)->get_position();
+		Vector2D predator_pos_sum = eco_system->get_around_predators_position_sum(this);
+		Vector2D d = predators_count * get_position() - predator_pos_sum;
 		if (d.modulus() < 1.0)
 			d = Vector2D(1, 0).rotate(EcoSystem::random_angle()) * get_speed();
 		else
