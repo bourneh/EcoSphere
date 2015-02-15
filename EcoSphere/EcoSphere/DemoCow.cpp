@@ -5,7 +5,7 @@ DemoCow::DemoCow(EcoSystem *eco_system) :
 Consumer(eco_system)
 {
 	set_alive();
-	set_energy(15000);
+	set_hp(15000);
 	set_speed(0.0);
 }
 
@@ -30,7 +30,7 @@ Entity *DemoCow::new_entity() const
 void DemoCow::on_tick()
 {
 	set_age(get_age() + 1);
-	set_energy(get_energy() - get_speed() * get_speed() / 2);
+	set_hp(get_hp() - get_speed() * get_speed() / 2);
 	if(!avoid_predator(10))
 		if(!predate(5))
 			brownian_motion(3);

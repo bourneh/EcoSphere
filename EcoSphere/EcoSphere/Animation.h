@@ -2,18 +2,24 @@
 #include <gdiplus.h>
 #include <mutex>
 #include "Timer.h"
-/*===========================================================================
- *Animation类，用于显示动画效果，由Timer触发，每个timer事件调用一次render函数。
- *可以通过重载render函数实现自定义动画效果。
- *render函数会把每帧画面画在一个buffer里，窗口把buffer画在显示区来显示动画。
- *由于可能与显示动画的窗口不在同一线程，所以带了一个互斥锁。
+
+
+/* Animation class
+ * Functionality: To display animations
+ * Triggered by a Timer
+ * Can display self-customized animations by overload the render() function
+ *
  */
+
+
 #ifndef DS_ECOSYSTEM_ANIMATION
 #define DS_ECOSYSTEM_ANIMATION
 
 class Animation
 {
 	friend class AnimationTimerTask;
+
+	//Timertask of the timer that triggers animation 
 	class AnimationTimerTask : public TimerTask
 	{
 	public:
@@ -25,18 +31,33 @@ class Animation
 public:
 	Animation(unsigned int width, unsigned int height);
 	virtual ~Animation();
+
+	//Get the pointer of the buffer
 	Gdiplus::Image *get_buffer_pointer();
+
+	//Render one frame
 	virtual void render(Gdiplus::Graphics *g);
+
+	//Start animation
 	void start();
+
+	//Stop animation
 	void stop();
+
+	//lock the mutex
 	bool try_lock();
+
+	//unlock the mutex
 	void unlock();
+
 protected:
+	//Width and height of the buffer canvas
 	unsigned int width, height;
+	//Mutex for multithread rendering
 	std::mutex rendering_mutex;
 private:
 	AnimationTimerTask *att;
-	Gdiplus::Image *buffer;
+	Gdiplus::Image *buffer;//The buffer canvas
 	Gdiplus::Graphics *g;
 	Timer *timer;
 };

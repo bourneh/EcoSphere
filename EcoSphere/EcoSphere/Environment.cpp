@@ -36,7 +36,6 @@ void Environment::spawn_producer()
 				if (temperature > 0.0)
 				{
 					Vector2D pos = EcoSystem::random_position();
-					//Vector2D spawn_pos((int)pos.x / 20 * 20, (int)pos.y / 35 * 35);
 					eco_system->spawn_entity(default_producer->new_entity());
 				}
 }

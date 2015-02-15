@@ -1,8 +1,8 @@
 #include "Vector2D.h"
 #include "Entity.h"
 /*
- *消费者。主要为动物。
- *这里实现的动物的行为有捕食、躲避捕食者、随机运动。
+ *Consumer.
+ *Mostly animals.
 */
 #ifndef DS_ECOSYSTEM_COMSUMER
 #define DS_ECOSYSTEM_COMSUMER
@@ -20,18 +20,20 @@ public:
 	virtual void on_eaten();
 
 	//behaviors
-	virtual bool predate(double speed);//捕食
-	virtual bool brownian_motion(double speed);//布朗运动
-	virtual bool avoid_predator(double speed);//躲避捕食者
-	virtual void multiply();//繁殖
+	virtual bool predate(double speed);
+	virtual bool brownian_motion(double speed);
+	virtual bool avoid_predator(double speed);
+	virtual void multiply();
 protected:
 	Consumer(EcoSystem *eco_system);
-	struct avoid_predator_str
+
+	//A structure used in avoid predator behavior
+	struct avoid_predator_structure
 	{
 		int t;
 		Vector2D v;
 		bool b;
-		avoid_predator_str() : t(6) {}
+		avoid_predator_structure() : t(6) {}
 	}aps;
 private:
 	double speed;

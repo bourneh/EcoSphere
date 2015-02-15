@@ -5,7 +5,7 @@ Grass::Grass(EcoSystem *eco_system) :
 Producer(eco_system)
 {
 	set_age(0);
-	set_energy(100);
+	set_hp(1);
 }
 Gdiplus::Image *Grass::get_entity_image() const
 {

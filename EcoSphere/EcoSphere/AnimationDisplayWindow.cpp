@@ -29,14 +29,15 @@ void AnimationDisplayWindow::on_quit()
 	delete g;
 	DisplayWindow::on_quit();
 }
-void AnimationDisplayWindow::on_paint()//重载on_paint函数
+void AnimationDisplayWindow::on_paint()
 {
 	if (!running)
 	{
 		g->Clear(Gdiplus::Color(255, 255, 255));
 	}
 	else if (animation->try_lock())
-	{//把缓冲区的图像画到窗口上
+	{
+		//Draw the image on the buffer canvas onto the client area of the window
 		g->DrawImage(animation->get_buffer_pointer(), 0, 0);
 		animation->unlock();
 	}

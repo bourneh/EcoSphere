@@ -6,7 +6,7 @@
 #include <string>
 
 /*
- *Ê³ÎïÍø
+ *FoodWeb
 */
 #ifndef DS_ECOSYSTEM_FOODWEB
 #define DS_ECOSYSTEM_FOODWEB

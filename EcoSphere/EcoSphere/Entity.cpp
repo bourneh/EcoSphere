@@ -32,14 +32,14 @@ void Entity::set_dead()
 		target->predators.erase(this);
 }
 
-double Entity::get_energy() const
+double Entity::get_hp() const
 {
-	return energy;
+	return hp;
 }
 
-void Entity::set_energy(double energy)
+void Entity::set_hp(double hp)
 {
-	this->energy = energy;
+	this->hp = hp;
 }
 
 Vector2D Entity::get_position() const

@@ -8,7 +8,7 @@
 #include <queue>
 #include <functional>
 /*
- *EcoSystem类。用于控制整个生态系统的运行。
+ *EcoSystem class.
 */
 
 
@@ -30,56 +30,97 @@ class Consumer;
 
 class EcoSystem
 {
-	friend class EcoSystemAnimation;//用于显示生态系统动画
-	friend class EcoSystemTimerTask;//定时器
+	friend class EcoSystemAnimation;//Used to display animations of this ecosystem.
+	friend class EcoSystemTimerTask;//The timer to trigger this ecosystem.
 public:
-	const static unsigned int	DEFAULT_WIDTH							= 1200;	//默认长和宽
+	const static unsigned int	DEFAULT_WIDTH							= 1200;	//Default width and height.
 	const static unsigned int	DEFAULT_HEIGHT							= 700;
-	const static unsigned int	CHUNK_SIZE								= 32;   //由于范围非常大，所以这里把生态系统分成每块大小为32*32的块来管理
-	static Vector2D random_position();//随机产生一个在生态系统内的位置坐标
-	static double random_double();//随机产生一个范围是[0, 1]的double值
-	static double random_angle();//随机产生一个范围是[0, 360]的double值
+
+	/*
+	 *There are 1200 * 700 points inside this ecosystem. It takes very large amount of time to iterate it over.
+	 *So here separates the whole ecosystem into several chunks with each chunk's size 32 * 32.
+	 */
+	const static unsigned int	CHUNK_SIZE								= 32;
+
+
+	static Vector2D random_position();//Generate a random position vector. The position is guaranteed to be inside the ecosystem.
+	static double random_double();//Generate a random double value with the range ------!!!!!!!------[0, 1]------!!!!!!------.
+	static double random_angle();//Generate a random double value with the range ------!!!!!!!------[0, 360]------!!!!!!------.
+
+	//These two functions are used to prevent the positions of the entities from being outside the ecosystem.
 	static void prevent_overstep(Vector2D &position); 
-	static void prevent_overstep(Entity *entity);//这两个函数用于防止生物的位置超出生态系统的范围
+	static void prevent_overstep(Entity *entity);
+
+
 	EcoSystem();
 	//virtual ~EcoSystem();
 
-	void run();//运行
-	void pause();//暂停
-	void resume();//继续运行
-	void reset();//重置（未写好）
-	virtual void on_tick();//每tick运行一次这个函数
-	FoodWeb*		get_food_web_instance();//食物网
+	void run();
+	void pause();
+	void resume();
+	void reset();
+
+	//on_tick() function is called by a timer.
+	virtual void on_tick();
+
+
+	FoodWeb*		get_food_web_instance();
 	void			set_food_web(FoodWeb *food_web);
-	Environment*	get_environment_instance();//环境
+	Environment*	get_environment_instance();
 	void			set_environment(Environment *environment);
 
+	//Register a species to ecosystem.
 	void	register_species(Entity *species);
-	void	spawn_entity(Entity *entity);//在生态系统的随机位置生成生物entity，内部调用了下面那个函数
-	void	spawn_entity(Entity *entity, Vector2D position);//在生态系统的特定位置生成生物entity
-	bool	try_eat(Entity *predator, Entity *prey);//predator尝试捕食prey，具体请看实现
-	Entity *find_entity(Entity *source, std::set<std::string> &types);//在以生物source所在块为中心的5*5的块中随机查找一个类型在types里的生物。
-	//std::set<Entity *> find_all_entity(Entity *source, std::set<std::string> &types);//在以生物source所在块为中心的5*5的块中查找所有类型在types里的生物。
-	Entity *find_prey(Entity *source);////在以生物source所在块为中心的5*5的块中随机查找一个source的食物。
+
+	//Spawn an entity at a random position
+	void	spawn_entity(Entity *entity);
+
+	//Spawn an entity at a specified position
+	void	spawn_entity(Entity *entity, Vector2D position);
+
+	//The predator tries to predate its prey.
+	bool	try_eat(Entity *predator, Entity *prey);
+
+	//在以生物source所在chunk为中心的5*5的chunk中随机查找一个类型在types里的生物。
+	Entity *find_entity(Entity *source, std::set<std::string> &types);
+
+	//在以生物source所在chunk为中心的5*5的chunk中随机查找一个source的食物。
+	Entity *find_prey(Entity *source);
+
+	//统计以生物source所在块为中心的5*5的chunk中source的捕食者的数量。
 	int get_around_predators_count(Entity* source);
+
+	//统计以生物source所在块为中心的5*5的chunk中source的捕食者的位置向量的和
+	//在Consumer的avoid_predator()函数中有说明这个位置向量和的用途
 	Vector2D get_around_predators_position_sum(Entity* source);
 private:
+	
+	//获得特定chunk中在types里的生物的数量。
 	int get_chunk_entity_count(int chunk_r, int chunk_c, std::set<std::string> &types);
+
+	//获得特定chunk中所有在types里的生物的位置向量和。
 	Vector2D get_chunk_entity_position_sum(int chunk_r, int chunk_c, std::set<std::string> &types);
-	Entity *find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);//在一个块中随机查找一个类型在types里的生物。
-	//std::set<Entity*> find_all_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);//在一个块中随机查找所有类型在types里的生物。
+	
+	//在一个chunk中随机查找一个类型在types里的生物。
+	Entity *find_entity_in_chunk(std::set<std::string> &types, int chunk_r, int chunk_c);
 
 	std::map<std::string, Entity*>         species_list;//生物种类列表
-	//std::vector<Entity*>                    entities[50][50];//块
 	std::list<Entity*>						update_list;//活着的生物列表，每个tick更新一次
 	std::vector<Entity*>					dead_entities;//死掉的生物列表，在EcoSystem类被销毁时它们占用的内存才会被释放
 
+
+	/*
+	 *chunk.
+	 *每个chunk维护这个chunk里的各种生物的数量和它们的位置向量和
+	*/
 	struct chunk_structure
 	{
 		std::map<std::string, Vector2D> position_sum;
 		std::map<std::string, int> count;
 		std::set<Entity*>entities;
 	}chunk[50][50];
+
+
 	FoodWeb     *food_web;
 	Environment *environment;
 
@@ -96,7 +137,6 @@ private:
 class EcoSystemAnimation : public Animation
 {
 public:
-	static bool render_order(const Entity *a, const Entity *b);
 	EcoSystemAnimation(EcoSystem *eco_system);
 	virtual void render(Gdiplus::Graphics *g);
 private:
